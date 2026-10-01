@@ -131,13 +131,14 @@ st.markdown(
       div[data-testid="stSegmentedControl"] > div {
         width: 100% !important;
         display: flex !important;
+        flex-wrap: wrap !important; /* อนุญาตให้ปุ่มปัดขึ้นบรรทัดใหม่เมื่อจอแคบ */
       }
       div[data-testid="stSegmentedControl"] button,
       div[data-testid="stSegmentedControl"] [role="option"] {
-        flex: 1 1 0px !important;
+        flex: 1 1 auto !important; /* ให้ปุ่มปรับขนาดตามเนื้อหาและพื้นที่ที่เหลือ */
+        min-width: 120px !important; /* กำหนดความกว้างขั้นต่ำไม่ให้ตัวหนังสือโดนบีบ */
         justify-content: center !important;
         text-align: center !important;
-      }
     </style>
     """,
     unsafe_allow_html=True,
