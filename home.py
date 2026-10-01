@@ -10,7 +10,7 @@ import streamlit as st
 #  ✏️  แก้ลิงก์ตรงนี้ที่เดียว (เว้นว่าง "" = ปุ่มจะถูกปิดไว้จนกว่าจะใส่ลิงก์)
 # ════════════════════════════════════════════════════════════════
 LINKS = {
-    "intro_colab": "",
+    "intro_colab": "https://colab.research.google.com/drive/1HSW_zcuTOrRy9oSEF6OeOm5aZk8iRzrp?usp=sharing",
     "intro_github": "",
     "neo4j_github": "",
     "recsys_colab": "",
