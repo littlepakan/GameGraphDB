@@ -12,7 +12,7 @@ def _config() -> tuple[str, str, str, str]:
         cfg["uri"],
         cfg["username"],
         cfg["password"],
-        cfg.get("database", "ca18ca3e"),
+        cfg.get("database", "4e237aa6"),
     )
 
 
@@ -44,10 +44,10 @@ def ping() -> bool:
 
 def create_schema() -> None:
     statements = [
-        "CREATE CONSTRAINT student_id_unique IF NOT EXISTS FOR (s:Student) REQUIRE s.student_id IS UNIQUE",
-        "CREATE CONSTRAINT book_id_unique IF NOT EXISTS FOR (b:Book) REQUIRE b.book_id IS UNIQUE",
-        "CREATE CONSTRAINT author_id_unique IF NOT EXISTS FOR (a:Author) REQUIRE a.author_id IS UNIQUE",
-        "CREATE CONSTRAINT category_name_unique IF NOT EXISTS FOR (c:Category) REQUIRE c.name IS UNIQUE",
+        "CREATE CONSTRAINT user_id_unique IF NOT EXISTS FOR (u:User) REQUIRE u.user_id IS UNIQUE",
+        "CREATE CONSTRAINT game_id_unique IF NOT EXISTS FOR (g:Game) REQUIRE g.game_id IS UNIQUE",
+        "CREATE CONSTRAINT developer_id_unique IF NOT EXISTS FOR (d:Developer) REQUIRE d.developer_id IS UNIQUE",
+        "CREATE CONSTRAINT genre_name_unique IF NOT EXISTS FOR (gn:Genre) REQUIRE gn.name IS UNIQUE",
     ]
     for stmt in statements:
         query(stmt, write=True)
@@ -57,279 +57,285 @@ def seed_demo_data() -> None:
     """Idempotent sample dataset: safe to run more than once."""
     create_schema()
 
-    students = [
-        {"student_id": "S001", "name": "Anan", "major": "Computer Science", "year": 2},
-        {"student_id": "S002", "name": "Mali", "major": "Computer Science", "year": 2},
-        {"student_id": "S003", "name": "Krit", "major": "Information Technology", "year": 3},
-        {"student_id": "S004", "name": "Nida", "major": "Data Science", "year": 2},
-        {"student_id": "S005", "name": "Ploy", "major": "Business Computer", "year": 3},
-        {"student_id": "S006", "name": "Ton", "major": "Computer Science", "year": 1},
+    users = [
+        {"user_id": "U001", "name": "Anan", "platform": "PC / Steam", "level": 42},
+        {"user_id": "U002", "name": "Mali", "platform": "PlayStation 5", "level": 28},
+        {"user_id": "U003", "name": "Krit", "platform": "PC / Epic", "level": 55},
+        {"user_id": "U004", "name": "Nida", "platform": "Nintendo Switch", "level": 19},
+        {"user_id": "U005", "name": "Ploy", "platform": "PC / Steam", "level": 34},
+        {"user_id": "U006", "name": "Ton", "platform": "Xbox Series X", "level": 12},
     ]
-    books = [
-        {"book_id": "B101", "title": "Python Programming", "year": 2025},
-        {"book_id": "B102", "title": "Artificial Intelligence Basics", "year": 2026},
-        {"book_id": "B103", "title": "Data Science for Students", "year": 2025},
-        {"book_id": "B104", "title": "Introduction to Database", "year": 2024},
-        {"book_id": "B105", "title": "Graph Databases with Neo4j", "year": 2026},
-        {"book_id": "B106", "title": "Machine Learning Foundations", "year": 2025},
-        {"book_id": "B107", "title": "Web Application Development", "year": 2024},
-        {"book_id": "B108", "title": "Algorithms and Problem Solving", "year": 2023},
+
+    # ชื่อเกมสมมติ (Fictional Games)
+    games = [
+        {"game_id": "G101", "title": "Chronicles of Aetheria", "year": 2025},
+        {"game_id": "G102", "title": "CyberPulse 2099", "year": 2026},
+        {"game_id": "G103", "title": "Starlight Tactics", "year": 2025},
+        {"game_id": "G104", "title": "Realm of Eldoria", "year": 2024},
+        {"game_id": "G105", "title": "Neon Shadow: Outlaws", "year": 2026},
+        {"game_id": "G106", "title": "Pixel Survival Frontier", "year": 2025},
+        {"game_id": "G107", "title": "Vortex Horizon: Apex", "year": 2024},
+        {"game_id": "G108", "title": "Mythic Legends: Awakening", "year": 2023},
     ]
-    authors = [
-        {"author_id": "A01", "name": "Somchai Tech"},
-        {"author_id": "A02", "name": "Narin Data"},
-        {"author_id": "A03", "name": "Kanya AI"},
-        {"author_id": "A04", "name": "Preecha DB"},
+
+    developers = [
+        {"developer_id": "D01", "name": "PixelCraft Studios"},
+        {"developer_id": "D02", "name": "Aether Interactive"},
+        {"developer_id": "D03", "name": "CyberNet Games"},
+        {"developer_id": "D04", "name": "MythicForge Entertainment"},
     ]
-    categories = ["Programming", "AI", "Data Science", "Database", "Web Development", "Algorithms"]
+
+    genres = ["Action RPG", "Cyberpunk", "Turn-Based Strategy", "Survival", "Sci-Fi", "Open World"]
 
     query(
         """
         UNWIND $rows AS row
-        MERGE (s:Student {student_id: row.student_id})
-        SET s.name = row.name, s.major = row.major, s.year = row.year
+        MERGE (u:User {user_id: row.user_id})
+        SET u.name = row.name, u.platform = row.platform, u.level = row.level
         """,
-        {"rows": students},
+        {"rows": users},
         write=True,
     )
     query(
         """
         UNWIND $rows AS row
-        MERGE (b:Book {book_id: row.book_id})
-        SET b.title = row.title, b.year = row.year
+        MERGE (g:Game {game_id: row.game_id})
+        SET g.title = row.title, g.year = row.year
         """,
-        {"rows": books},
+        {"rows": games},
         write=True,
     )
     query(
         """
         UNWIND $rows AS row
-        MERGE (a:Author {author_id: row.author_id})
-        SET a.name = row.name
+        MERGE (d:Developer {developer_id: row.developer_id})
+        SET d.name = row.name
         """,
-        {"rows": authors},
+        {"rows": developers},
         write=True,
     )
     query(
-        "UNWIND $rows AS name MERGE (:Category {name:name})",
-        {"rows": categories},
+        "UNWIND $rows AS name MERGE (:Genre {name:name})",
+        {"rows": genres},
         write=True,
     )
 
     friendships = [
-        ["S001", "S002"], ["S001", "S003"], ["S001", "S004"],
-        ["S002", "S005"], ["S003", "S004"], ["S004", "S006"],
+        ["U001", "U002"], ["U001", "U003"], ["U001", "U004"],
+        ["U002", "U005"], ["U003", "U004"], ["U004", "U006"],
     ]
     query(
         """
         UNWIND $rows AS row
-        MATCH (a:Student {student_id: row[0]}), (b:Student {student_id: row[1]})
+        MATCH (a:User {user_id: row[0]}), (b:User {user_id: row[1]})
         MERGE (a)-[:FRIEND_OF]->(b)
         """,
         {"rows": friendships},
         write=True,
     )
 
-    borrows = [
-        {"s": "S001", "b": "B101", "date": "2026-08-01", "rating": 4.0},
-        {"s": "S001", "b": "B108", "date": "2026-08-14", "rating": 4.0},
-        {"s": "S002", "b": "B103", "date": "2026-08-05", "rating": 5.0},
-        {"s": "S002", "b": "B102", "date": "2026-08-18", "rating": 4.0},
-        {"s": "S003", "b": "B103", "date": "2026-08-07", "rating": 4.0},
-        {"s": "S003", "b": "B104", "date": "2026-08-20", "rating": 5.0},
-        {"s": "S004", "b": "B105", "date": "2026-08-09", "rating": 5.0},
-        {"s": "S004", "b": "B103", "date": "2026-08-24", "rating": 5.0},
-        {"s": "S005", "b": "B107", "date": "2026-08-11", "rating": 4.0},
-        {"s": "S006", "b": "B106", "date": "2026-08-12", "rating": 4.0},
+    played = [
+        {"u": "U001", "g": "G101", "date": "2026-08-01", "rating": 4.5},
+        {"u": "U001", "g": "G108", "date": "2026-08-14", "rating": 4.0},
+        {"u": "U002", "g": "G103", "date": "2026-08-05", "rating": 5.0},
+        {"u": "U002", "g": "G102", "date": "2026-08-18", "rating": 4.5},
+        {"u": "U003", "g": "G103", "date": "2026-08-07", "rating": 4.0},
+        {"u": "U003", "g": "G104", "date": "2026-08-20", "rating": 5.0},
+        {"u": "U004", "g": "G105", "date": "2026-08-09", "rating": 5.0},
+        {"u": "U004", "g": "G103", "date": "2026-08-24", "rating": 4.8},
+        {"u": "U005", "g": "G107", "date": "2026-08-11", "rating": 4.0},
+        {"u": "U006", "g": "G106", "date": "2026-08-12", "rating": 4.2},
     ]
     query(
         """
         UNWIND $rows AS row
-        MATCH (s:Student {student_id: row.s}), (b:Book {book_id: row.b})
-        MERGE (s)-[r:BORROWED]->(b)
-        SET r.borrow_date = date(row.date), r.rating = row.rating
+        MATCH (u:User {user_id: row.u}), (g:Game {game_id: row.g})
+        MERGE (u)-[r:PLAYED]->(g)
+        SET r.play_date = date(row.date), r.rating = row.rating
         """,
-        {"rows": borrows},
+        {"rows": played},
         write=True,
     )
 
-    interests = [
-        ["S001", "Programming"], ["S001", "Database"],
-        ["S002", "AI"], ["S002", "Data Science"],
-        ["S003", "Database"], ["S003", "Data Science"],
-        ["S004", "AI"], ["S004", "Data Science"],
-        ["S005", "Web Development"], ["S006", "Programming"],
+    likes_genres = [
+        ["U001", "Action RPG"], ["U001", "Open World"],
+        ["U002", "Cyberpunk"], ["U002", "Turn-Based Strategy"],
+        ["U003", "Turn-Based Strategy"], ["U003", "Open World"],
+        ["U004", "Cyberpunk"], ["U004", "Sci-Fi"],
+        ["U005", "Survival"], ["U006", "Action RPG"],
     ]
     query(
         """
         UNWIND $rows AS row
-        MATCH (s:Student {student_id: row[0]}), (c:Category {name: row[1]})
-        MERGE (s)-[:INTERESTED_IN]->(c)
+        MATCH (u:User {user_id: row[0]}), (gn:Genre {name: row[1]})
+        MERGE (u)-[:LIKES_GENRE]->(gn)
         """,
-        {"rows": interests},
+        {"rows": likes_genres},
         write=True,
     )
 
-    book_categories = [
-        ["B101", "Programming"], ["B102", "AI"], ["B103", "Data Science"],
-        ["B104", "Database"], ["B105", "Database"], ["B106", "AI"],
-        ["B106", "Data Science"], ["B107", "Web Development"],
-        ["B108", "Algorithms"], ["B108", "Programming"],
+    game_genres = [
+        ["G101", "Action RPG"], ["G101", "Open World"],
+        ["G102", "Cyberpunk"], ["G102", "Sci-Fi"],
+        ["G103", "Turn-Based Strategy"], ["G103", "Sci-Fi"],
+        ["G104", "Open World"], ["G104", "Action RPG"],
+        ["G105", "Cyberpunk"], ["G106", "Survival"],
+        ["G107", "Sci-Fi"], ["G108", "Action RPG"],
     ]
     query(
         """
         UNWIND $rows AS row
-        MATCH (b:Book {book_id: row[0]}), (c:Category {name: row[1]})
-        MERGE (b)-[:IN_CATEGORY]->(c)
+        MATCH (g:Game {game_id: row[0]}), (gn:Genre {name: row[1]})
+        MERGE (g)-[:IN_GENRE]->(gn)
         """,
-        {"rows": book_categories},
+        {"rows": game_genres},
         write=True,
     )
 
-    wrote = [
-        ["A01", "B101"], ["A03", "B102"], ["A02", "B103"], ["A04", "B104"],
-        ["A04", "B105"], ["A03", "B106"], ["A01", "B107"], ["A01", "B108"],
+    developers_games = [
+        ["D01", "G101"], ["D02", "G102"], ["D03", "G103"], ["D04", "G104"],
+        ["D02", "G105"], ["D01", "G106"], ["D03", "G107"], ["D04", "G108"],
     ]
     query(
         """
         UNWIND $rows AS row
-        MATCH (a:Author {author_id: row[0]}), (b:Book {book_id: row[1]})
-        MERGE (a)-[:WROTE]->(b)
+        MATCH (d:Developer {developer_id: row[0]}), (g:Game {game_id: row[1]})
+        MERGE (d)-[:DEVELOPED]->(g)
         """,
-        {"rows": wrote},
+        {"rows": developers_games},
         write=True,
     )
 
 
-def get_students() -> list[dict[str, Any]]:
-    return query("MATCH (s:Student) RETURN s.student_id AS student_id, s.name AS name, s.major AS major, s.year AS year ORDER BY s.student_id")
+def get_users() -> list[dict[str, Any]]:
+    return query("MATCH (u:User) RETURN u.user_id AS user_id, u.name AS name, u.platform AS platform, u.level AS level ORDER BY u.user_id")
 
 
 def get_dashboard_metrics() -> dict[str, int]:
     rows = query(
         """
-        MATCH (s:Student) WITH count(s) AS students
-        MATCH (b:Book) WITH students, count(b) AS books
-        MATCH ()-[r:BORROWED]->() WITH students, books, count(r) AS borrows
+        MATCH (u:User) WITH count(u) AS users
+        MATCH (g:Game) WITH users, count(g) AS games
+        MATCH ()-[r:PLAYED]->() WITH users, games, count(r) AS plays
         MATCH ()-[f:FRIEND_OF]->()
-        RETURN students, books, borrows, count(f) AS friendships
+        RETURN users, games, plays, count(f) AS friendships
         """
     )
-    return rows[0] if rows else {"students": 0, "books": 0, "borrows": 0, "friendships": 0}
+    return rows[0] if rows else {"users": 0, "games": 0, "plays": 0, "friendships": 0}
 
 
-def get_profile(student_id: str) -> dict[str, Any] | None:
+def get_profile(user_id: str) -> dict[str, Any] | None:
     rows = query(
         """
-        MATCH (s:Student {student_id:$student_id})
-        OPTIONAL MATCH (s)-[:INTERESTED_IN]->(c:Category)
-        OPTIONAL MATCH (s)-[:BORROWED]->(b:Book)
-        RETURN s.student_id AS student_id, s.name AS name, s.major AS major, s.year AS year,
-               collect(DISTINCT c.name) AS interests,
-               collect(DISTINCT {book_id:b.book_id, title:b.title}) AS borrowed
+        MATCH (u:User {user_id:$user_id})
+        OPTIONAL MATCH (u)-[:LIKES_GENRE]->(gn:Genre)
+        OPTIONAL MATCH (u)-[:PLAYED]->(g:Game)
+        RETURN u.user_id AS user_id, u.name AS name, u.platform AS platform, u.level AS level,
+               collect(DISTINCT gn.name) AS interests,
+               collect(DISTINCT {game_id:g.game_id, title:g.title}) AS played
         """,
-        {"student_id": student_id},
+        {"user_id": user_id},
     )
     if not rows:
         return None
     row = rows[0]
-    row["borrowed"] = [x for x in row["borrowed"] if x.get("book_id")]
+    row["played"] = [x for x in row["played"] if x.get("game_id")]
     return row
 
 
-def recommend_books(student_id: str, limit: int = 8) -> list[dict[str, Any]]:
-    """Explainable hybrid score: social + interests + popularity + ratings."""
+def recommend_games(user_id: str, limit: int = 8) -> list[dict[str, Any]]:
+    """Explainable hybrid score for games: friends + genres + popularity + ratings."""
     return query(
         """
-        MATCH (u:Student {student_id:$student_id})
-        MATCH (b:Book)
-        WHERE NOT (u)-[:BORROWED]->(b)
+        MATCH (u:User {user_id:$user_id})
+        MATCH (g:Game)
+        WHERE NOT (u)-[:PLAYED]->(g)
 
-        OPTIONAL MATCH (u)-[:FRIEND_OF]-(f:Student)-[:BORROWED]->(b)
-        WITH u, b, count(DISTINCT f) AS friend_count,
+        OPTIONAL MATCH (u)-[:FRIEND_OF]-(f:User)-[:PLAYED]->(g)
+        WITH u, g, count(DISTINCT f) AS friend_count,
              [x IN collect(DISTINCT f.name) WHERE x IS NOT NULL][0..3] AS friend_names
 
-        OPTIONAL MATCH (u)-[:INTERESTED_IN]->(c:Category)<-[:IN_CATEGORY]-(b)
-        WITH b, friend_count, friend_names,
-             count(DISTINCT c) AS interest_matches,
-             [x IN collect(DISTINCT c.name) WHERE x IS NOT NULL] AS matched_categories
+        OPTIONAL MATCH (u)-[:LIKES_GENRE]->(gn:Genre)<-[:IN_GENRE]-(g)
+        WITH g, friend_count, friend_names,
+             count(DISTINCT gn) AS genre_matches,
+             [x IN collect(DISTINCT gn.name) WHERE x IS NOT NULL] AS matched_genres
 
-        OPTIONAL MATCH (:Student)-[br:BORROWED]->(b)
-        WITH b, friend_count, friend_names, interest_matches, matched_categories,
-             count(br) AS popularity,
-             avg(br.rating) AS avg_rating
+        OPTIONAL MATCH (:User)-[pr:PLAYED]->(g)
+        WITH g, friend_count, friend_names, genre_matches, matched_genres,
+             count(pr) AS popularity,
+             avg(pr.rating) AS avg_rating
 
-        WITH b, friend_count, friend_names, interest_matches, matched_categories,
+        WITH g, friend_count, friend_names, genre_matches, matched_genres,
              popularity, coalesce(avg_rating, 0.0) AS avg_rating,
-             (friend_count * 3.0) + (interest_matches * 2.0) +
+             (friend_count * 3.0) + (genre_matches * 2.0) +
              (popularity * 0.20) + (coalesce(avg_rating, 0.0) * 0.50) AS score
-        WHERE friend_count > 0 OR interest_matches > 0 OR popularity > 0
+        WHERE friend_count > 0 OR genre_matches > 0 OR popularity > 0
 
-        OPTIONAL MATCH (a:Author)-[:WROTE]->(b)
-        OPTIONAL MATCH (b)-[:IN_CATEGORY]->(allc:Category)
-        RETURN b.book_id AS book_id, b.title AS title, b.year AS year,
-               collect(DISTINCT a.name) AS authors,
-               collect(DISTINCT allc.name) AS categories,
-               friend_count, friend_names, interest_matches, matched_categories,
+        OPTIONAL MATCH (d:Developer)-[:DEVELOPED]->(g)
+        OPTIONAL MATCH (g)-[:IN_GENRE]->(allg:Genre)
+        RETURN g.game_id AS game_id, g.title AS title, g.year AS year,
+               collect(DISTINCT d.name) AS developers,
+               collect(DISTINCT allg.name) AS genres,
+               friend_count, friend_names, genre_matches, matched_genres,
                popularity, round(avg_rating * 100) / 100.0 AS avg_rating,
                round(score * 100) / 100.0 AS score
-        ORDER BY score DESC, b.title
+        ORDER BY score DESC, g.title
         LIMIT $limit
         """,
-        {"student_id": student_id, "limit": int(limit)},
+        {"user_id": user_id, "limit": int(limit)},
     )
 
 
-def search_books(keyword: str = "", category: str | None = None) -> list[dict[str, Any]]:
+def search_games(keyword: str = "", genre: str | None = None) -> list[dict[str, Any]]:
     return query(
         """
-        MATCH (b:Book)
-        OPTIONAL MATCH (a:Author)-[:WROTE]->(b)
-        OPTIONAL MATCH (b)-[:IN_CATEGORY]->(c:Category)
-        WITH b, collect(DISTINCT a.name) AS authors, collect(DISTINCT c.name) AS categories
-        WHERE ($keyword = '' OR toLower(b.title) CONTAINS toLower($keyword)
-               OR any(x IN authors WHERE toLower(x) CONTAINS toLower($keyword)))
-          AND ($category = '' OR $category IN categories)
-        RETURN b.book_id AS book_id, b.title AS title, b.year AS year,
-               authors, categories
-        ORDER BY b.title
+        MATCH (g:Game)
+        OPTIONAL MATCH (d:Developer)-[:DEVELOPED]->(g)
+        OPTIONAL MATCH (g)-[:IN_GENRE]->(gn:Genre)
+        WITH g, collect(DISTINCT d.name) AS developers, collect(DISTINCT gn.name) AS genres
+        WHERE ($keyword = '' OR toLower(g.title) CONTAINS toLower($keyword)
+               OR any(x IN developers WHERE toLower(x) CONTAINS toLower($keyword)))
+          AND ($genre = '' OR $genre IN genres)
+        RETURN g.game_id AS game_id, g.title AS title, g.year AS year,
+               developers, genres
+        ORDER BY g.title
         """,
-        {"keyword": keyword.strip(), "category": category or ""},
+        {"keyword": keyword.strip(), "genre": genre or ""},
     )
 
 
-def list_categories() -> list[str]:
-    return [row["name"] for row in query("MATCH (c:Category) RETURN c.name AS name ORDER BY c.name")]
+def list_genres() -> list[str]:
+    return [row["name"] for row in query("MATCH (gn:Genre) RETURN gn.name AS name ORDER BY gn.name")]
 
 
-def record_borrow(student_id: str, book_id: str, borrow_date: str, rating: float | None = None) -> None:
+def record_play(user_id: str, game_id: str, play_date: str, rating: float | None = None) -> None:
     query(
         """
-        MATCH (s:Student {student_id:$student_id}), (b:Book {book_id:$book_id})
-        MERGE (s)-[r:BORROWED]->(b)
-        SET r.borrow_date = date($borrow_date)
+        MATCH (u:User {user_id:$user_id}), (g:Game {game_id:$game_id})
+        MERGE (u)-[r:PLAYED]->(g)
+        SET r.play_date = date($play_date)
         FOREACH (_ IN CASE WHEN $rating IS NULL THEN [] ELSE [1] END | SET r.rating = $rating)
         """,
-        {"student_id": student_id, "book_id": book_id, "borrow_date": borrow_date, "rating": rating},
+        {"user_id": user_id, "game_id": game_id, "play_date": play_date, "rating": rating},
         write=True,
     )
 
 
-def graph_neighborhood(student_id: str, limit: int = 40) -> list[dict[str, Any]]:
+def graph_neighborhood(user_id: str, limit: int = 40) -> list[dict[str, Any]]:
     return query(
         """
-        MATCH (u:Student {student_id:$student_id})
-        OPTIONAL MATCH p=(u)-[:FRIEND_OF|BORROWED|INTERESTED_IN*1..2]-(x)
+        MATCH (u:User {user_id:$user_id})
+        OPTIONAL MATCH p=(u)-[:FRIEND_OF|PLAYED|LIKES_GENRE*1..2]-(x)
         WITH u, collect(p)[0..$limit] AS paths
         UNWIND paths AS p
         UNWIND relationships(p) AS r
         WITH DISTINCT startNode(r) AS s, r, endNode(r) AS t
         RETURN elementId(s) AS source_id, labels(s)[0] AS source_label,
-               coalesce(s.name, s.title, s.student_id, s.book_id) AS source_name,
+               coalesce(s.name, s.title, s.user_id, s.game_id) AS source_name,
                type(r) AS relationship,
                elementId(t) AS target_id, labels(t)[0] AS target_label,
-               coalesce(t.name, t.title, t.student_id, t.book_id) AS target_name
+               coalesce(t.name, t.title, t.user_id, t.game_id) AS target_name
         LIMIT $limit
         """,
-        {"student_id": student_id, "limit": int(limit)},
+        {"user_id": user_id, "limit": int(limit)},
     )
