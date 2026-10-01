@@ -78,7 +78,22 @@ def seed_demo_data() -> None:
         {"user_id": "U004", "name": "Nida", "platform": "Nintendo Switch", "level": 19},
         {"user_id": "U005", "name": "Ploy", "platform": "PC / Steam", "level": 34},
         {"user_id": "U006", "name": "Ton", "platform": "Xbox Series X", "level": 12},
+        {"user_id": "U007", "name": "Beam", "platform": "PC / Steam", "level": 60},
+        {"user_id": "U008", "name": "Nat", "platform": "PlayStation 5", "level": 45},
+        {"user_id": "U009", "name": "Fern", "platform": "Nintendo Switch", "level": 22},
+        {"user_id": "U010", "name": "Golf", "platform": "PC / Epic", "level": 38},
+        {"user_id": "U011", "name": "Bow", "platform": "Xbox Series X", "level": 15},
+        {"user_id": "U012", "name": "Win", "platform": "PC / Steam", "level": 50},
+        {"user_id": "U013", "name": "Fah", "platform": "PlayStation 5", "level": 31},
+        {"user_id": "U014", "name": "Oat", "platform": "PC / GOG", "level": 47},
+        {"user_id": "U015", "name": "May", "platform": "Nintendo Switch", "level": 25},
+        {"user_id": "U016", "name": "Bank", "platform": "PC / Steam", "level": 68},
+        {"user_id": "U017", "name": "Peach", "platform": "Xbox Series X", "level": 29},
+        {"user_id": "U018", "name": "Jane", "platform": "PlayStation 5", "level": 41},
+        {"user_id": "U019", "name": "Toey", "platform": "PC / Epic", "level": 33},
+        {"user_id": "U020", "name": "Earth", "platform": "PC / Steam", "level": 52},
     ]
+
     games = [
         {"game_id": "G101", "title": "Chronicles of Aetheria", "year": 2025},
         {"game_id": "G102", "title": "CyberPulse 2099", "year": 2026},
@@ -88,14 +103,45 @@ def seed_demo_data() -> None:
         {"game_id": "G106", "title": "Pixel Survival Frontier", "year": 2025},
         {"game_id": "G107", "title": "Vortex Horizon: Apex", "year": 2024},
         {"game_id": "G108", "title": "Mythic Legends: Awakening", "year": 2023},
+        {"game_id": "G109", "title": "Astral Odyssey", "year": 2025},
+        {"game_id": "G110", "title": "Shadowfall Protocol", "year": 2026},
+        {"game_id": "G111", "title": "Valhalla: Frost & Fire", "year": 2024},
+        {"game_id": "G112", "title": "Mech Vanguard", "year": 2025},
+        {"game_id": "G113", "title": "Dungeon Architect", "year": 2023},
+        {"game_id": "G114", "title": "Quantum Fracture", "year": 2026},
+        {"game_id": "G115", "title": "Eldritch Echoes", "year": 2024},
+        {"game_id": "G116", "title": "Solar Dynasty", "year": 2025},
+        {"game_id": "G117", "title": "Rogue Galaxy: Reborn", "year": 2023},
+        {"game_id": "G118", "title": "BioHazard Earth", "year": 2026},
+        {"game_id": "G119", "title": "Celestial Combat", "year": 2024},
+        {"game_id": "G120", "title": "Overclocked", "year": 2025},
+        {"game_id": "G121", "title": "HyperSpace Odyssey", "year": 2026},
+        {"game_id": "G122", "title": "Titan Protocol", "year": 2024},
+        {"game_id": "G123", "title": "Crypt of the Void", "year": 2025},
+        {"game_id": "G124", "title": "Iron Fortress", "year": 2023},
+        {"game_id": "G125", "title": "Galactic Frontiers", "year": 2026},
     ]
+
     developers = [
         {"developer_id": "D01", "name": "PixelCraft Studios"},
         {"developer_id": "D02", "name": "Aether Interactive"},
         {"developer_id": "D03", "name": "CyberNet Games"},
         {"developer_id": "D04", "name": "MythicForge Entertainment"},
+        {"developer_id": "D05", "name": "Neon Nexus Games"},
+        {"developer_id": "D06", "name": "Ironclad Software"},
+        {"developer_id": "D07", "name": "Voidwalker Games"},
+        {"developer_id": "D08", "name": "Stellar Dynamics"},
+        {"developer_id": "D09", "name": "Odyssey Digital"},
+        {"developer_id": "D10", "name": "Arcane Realm Labs"},
+        {"developer_id": "D11", "name": "FrostByte Interactive"},
+        {"developer_id": "D12", "name": "Quantum Leap Studios"},
     ]
-    genres = ["Action RPG", "Cyberpunk", "Turn-Based Strategy", "Survival", "Sci-Fi", "Open World"]
+
+    genres = [
+        "Action RPG", "Cyberpunk", "Turn-Based Strategy", "Survival", "Sci-Fi", "Open World",
+        "Roguelike", "MMORPG", "FPS", "Puzzle", "Tactical Shooter", "Racing",
+        "Platformer", "Horror", "Fighting"
+    ]
 
     query(
         """
@@ -124,8 +170,13 @@ def seed_demo_data() -> None:
     query("UNWIND $rows AS name MERGE (:Genre {name:name})", {"rows": genres}, write=True)
 
     friendships = [
-        ["U001", "U002"], ["U001", "U003"], ["U001", "U004"],
-        ["U002", "U005"], ["U003", "U004"], ["U004", "U006"],
+        ["U001", "U002"], ["U001", "U003"], ["U001", "U004"], ["U001", "U007"],
+        ["U002", "U005"], ["U002", "U008"], ["U003", "U004"], ["U003", "U010"],
+        ["U004", "U006"], ["U004", "U009"], ["U005", "U012"], ["U005", "U016"],
+        ["U006", "U011"], ["U007", "U008"], ["U007", "U012"], ["U008", "U013"],
+        ["U009", "U015"], ["U010", "U014"], ["U010", "U019"], ["U011", "U017"],
+        ["U012", "U016"], ["U013", "U018"], ["U014", "U020"], ["U016", "U020"],
+        ["U018", "U019"],
     ]
     query(
         """
@@ -140,14 +191,40 @@ def seed_demo_data() -> None:
     played = [
         {"u": "U001", "g": "G101", "date": "2026-08-01", "rating": 4.5},
         {"u": "U001", "g": "G108", "date": "2026-08-14", "rating": 4.0},
+        {"u": "U001", "g": "G109", "date": "2026-08-20", "rating": 4.8},
         {"u": "U002", "g": "G103", "date": "2026-08-05", "rating": 5.0},
         {"u": "U002", "g": "G102", "date": "2026-08-18", "rating": 4.5},
+        {"u": "U002", "g": "G110", "date": "2026-08-25", "rating": 3.9},
         {"u": "U003", "g": "G103", "date": "2026-08-07", "rating": 4.0},
         {"u": "U003", "g": "G104", "date": "2026-08-20", "rating": 5.0},
+        {"u": "U003", "g": "G111", "date": "2026-08-28", "rating": 4.2},
         {"u": "U004", "g": "G105", "date": "2026-08-09", "rating": 5.0},
         {"u": "U004", "g": "G103", "date": "2026-08-24", "rating": 4.8},
+        {"u": "U004", "g": "G112", "date": "2026-08-30", "rating": 4.1},
         {"u": "U005", "g": "G107", "date": "2026-08-11", "rating": 4.0},
+        {"u": "U005", "g": "G113", "date": "2026-08-22", "rating": 4.6},
         {"u": "U006", "g": "G106", "date": "2026-08-12", "rating": 4.2},
+        {"u": "U006", "g": "G114", "date": "2026-08-26", "rating": 3.8},
+        {"u": "U007", "g": "G101", "date": "2026-08-03", "rating": 4.9},
+        {"u": "U007", "g": "G115", "date": "2026-08-15", "rating": 4.3},
+        {"u": "U008", "g": "G116", "date": "2026-08-06", "rating": 4.7},
+        {"u": "U008", "g": "G102", "date": "2026-08-19", "rating": 4.4},
+        {"u": "U009", "g": "G117", "date": "2026-08-08", "rating": 4.0},
+        {"u": "U009", "g": "G106", "date": "2026-08-21", "rating": 4.5},
+        {"u": "U010", "g": "G118", "date": "2026-08-10", "rating": 4.8},
+        {"u": "U010", "g": "G103", "date": "2026-08-23", "rating": 3.9},
+        {"u": "U011", "g": "G119", "date": "2026-08-13", "rating": 4.1},
+        {"u": "U012", "g": "G120", "date": "2026-08-16", "rating": 4.6},
+        {"u": "U012", "g": "G101", "date": "2026-08-27", "rating": 4.7},
+        {"u": "U013", "g": "G121", "date": "2026-08-17", "rating": 4.0},
+        {"u": "U014", "g": "G122", "date": "2026-08-02", "rating": 4.3},
+        {"u": "U015", "g": "G123", "date": "2026-08-04", "rating": 3.7},
+        {"u": "U016", "g": "G124", "date": "2026-08-15", "rating": 4.9},
+        {"u": "U016", "g": "G107", "date": "2026-08-29", "rating": 4.2},
+        {"u": "U017", "g": "G125", "date": "2026-08-18", "rating": 4.0},
+        {"u": "U018", "g": "G102", "date": "2026-08-22", "rating": 4.6},
+        {"u": "U019", "g": "G104", "date": "2026-08-25", "rating": 4.8},
+        {"u": "U020", "g": "G109", "date": "2026-08-30", "rating": 4.4},
     ]
     query(
         """
@@ -160,11 +237,26 @@ def seed_demo_data() -> None:
     )
 
     likes_genres = [
-        ["U001", "Action RPG"], ["U001", "Open World"],
-        ["U002", "Cyberpunk"], ["U002", "Turn-Based Strategy"],
-        ["U003", "Turn-Based Strategy"], ["U003", "Open World"],
-        ["U004", "Cyberpunk"], ["U004", "Sci-Fi"],
-        ["U005", "Survival"], ["U006", "Action RPG"],
+        ["U001", "Action RPG"], ["U001", "Open World"], ["U001", "MMORPG"],
+        ["U002", "Cyberpunk"], ["U002", "Turn-Based Strategy"], ["U002", "Sci-Fi"],
+        ["U003", "Turn-Based Strategy"], ["U003", "Open World"], ["U003", "Roguelike"],
+        ["U004", "Cyberpunk"], ["U004", "Sci-Fi"], ["U004", "FPS"],
+        ["U005", "Survival"], ["U005", "Horror"],
+        ["U006", "Action RPG"], ["U006", "Platformer"],
+        ["U007", "Action RPG"], ["U007", "Open World"],
+        ["U008", "Sci-Fi"], ["U008", "Cyberpunk"],
+        ["U009", "Survival"], ["U009", "Puzzle"],
+        ["U010", "Turn-Based Strategy"], ["U010", "Tactical Shooter"],
+        ["U011", "Racing"], ["U011", "Action RPG"],
+        ["U012", "Open World"], ["U012", "MMORPG"],
+        ["U013", "Sci-Fi"], ["U013", "Fighting"],
+        ["U014", "Roguelike"], ["U014", "Survival"],
+        ["U015", "Puzzle"], ["U015", "Platformer"],
+        ["U016", "Action RPG"], ["U016", "FPS"],
+        ["U017", "Racing"], ["U017", "Cyberpunk"],
+        ["U018", "Sci-Fi"], ["U018", "Turn-Based Strategy"],
+        ["U019", "Open World"], ["U019", "Action RPG"],
+        ["U020", "MMORPG"], ["U020", "Roguelike"],
     ]
     query(
         """
@@ -180,8 +272,27 @@ def seed_demo_data() -> None:
         ["G102", "Cyberpunk"], ["G102", "Sci-Fi"],
         ["G103", "Turn-Based Strategy"], ["G103", "Sci-Fi"],
         ["G104", "Open World"], ["G104", "Action RPG"],
-        ["G105", "Cyberpunk"], ["G106", "Survival"],
-        ["G107", "Sci-Fi"], ["G108", "Action RPG"],
+        ["G105", "Cyberpunk"], ["G105", "FPS"],
+        ["G106", "Survival"], ["G106", "Open World"],
+        ["G107", "Sci-Fi"], ["G107", "Tactical Shooter"],
+        ["G108", "Action RPG"], ["G108", "MMORPG"],
+        ["G109", "Sci-Fi"], ["G109", "MMORPG"],
+        ["G110", "Cyberpunk"], ["G110", "FPS"],
+        ["G111", "Action RPG"], ["G111", "Open World"],
+        ["G112", "Sci-Fi"], ["G112", "Tactical Shooter"],
+        ["G113", "Puzzle"], ["G113", "Turn-Based Strategy"],
+        ["G114", "Sci-Fi"], ["G114", "FPS"],
+        ["G115", "Horror"], ["G115", "Survival"],
+        ["G116", "Sci-Fi"], ["G116", "Turn-Based Strategy"],
+        ["G117", "Roguelike"], ["G117", "Action RPG"],
+        ["G118", "Horror"], ["G118", "Survival"],
+        ["G119", "Fighting"], ["G119", "Action RPG"],
+        ["G120", "Cyberpunk"], ["G120", "Racing"],
+        ["G121", "Sci-Fi"], ["G121", "MMORPG"],
+        ["G122", "Action RPG"], ["G122", "Tactical Shooter"],
+        ["G123", "Roguelike"], ["G123", "Puzzle"],
+        ["G124", "Survival"], ["G124", "Open World"],
+        ["G125", "Sci-Fi"], ["G125", "Platformer"],
     ]
     query(
         """
@@ -193,8 +304,18 @@ def seed_demo_data() -> None:
     )
 
     developers_games = [
-        ["D01", "G101"], ["D02", "G102"], ["D03", "G103"], ["D04", "G104"],
-        ["D02", "G105"], ["D01", "G106"], ["D03", "G107"], ["D04", "G108"],
+        ["D01", "G101"], ["D01", "G106"], ["D01", "G111"],
+        ["D02", "G102"], ["D02", "G105"], ["D02", "G110"],
+        ["D03", "G103"], ["D03", "G107"], ["D03", "G112"],
+        ["D04", "G104"], ["D04", "G108"], ["D04", "G115"],
+        ["D05", "G109"], ["D05", "G114"],
+        ["D06", "G113"], ["D06", "G124"],
+        ["D07", "G116"], ["D07", "G123"],
+        ["D08", "G117"], ["D08", "G121"],
+        ["D09", "G118"], ["D09", "G125"],
+        ["D10", "G119"],
+        ["D11", "G120"],
+        ["D12", "G122"],
     ]
     query(
         """
