@@ -95,14 +95,76 @@ st.markdown(
       .status {margin-left:auto; font-size:.8rem; color:var(--teal); border:1px solid rgba(55,213,200,.4);
                background:rgba(55,213,200,.1); padding:.2rem .7rem; border-radius:999px; white-space:nowrap;}
 
-      [data-testid="stRadio"] [role="radiogroup"] {gap:.3rem; flex-wrap:wrap; background:var(--panel);
-               border:1px solid var(--line); border-radius:14px; padding:.35rem; margin:.7rem 0 1.4rem;}
-      [data-testid="stRadio"] label {padding:.4rem .9rem; border-radius:10px; cursor:pointer; margin:0;}
-      [data-testid="stRadio"] label > div:first-child {display:none;}
-      [data-testid="stRadio"] label:hover {background:rgba(255,255,255,.06);}
-      [data-testid="stRadio"] label:has(input:checked) {background:linear-gradient(135deg, var(--violet), #8a7bff);
-               box-shadow:0 4px 14px rgba(108,99,255,.45);}
-      [data-testid="stRadio"] label:has(input:checked) p {color:#fff; font-weight:600;}
+      /* === Responsive Radio Menu (Button Group) === */
+      [data-testid="stRadio"] {
+        width: 100%;
+      }
+      [data-testid="stRadio"] [role="radiogroup"] {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0.4rem !important;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px; /* โค้งมนเท่ากับ topbar */
+        padding: 0.4rem;
+        margin: 0.8rem 0 1.4rem 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      [data-testid="stRadio"] label {
+        flex: 1 1 auto; /* ขยายปุ่มให้เต็มความกว้างเท่าๆ กันทุกปุ่ม */
+        text-align: center;
+        justify-content: center;
+        padding: 0.55rem 0.8rem !important;
+        border-radius: 10px;
+        cursor: pointer;
+        margin: 0 !important;
+        background: transparent;
+        transition: all 0.2s ease-in-out;
+        min-width: max-content; /* ป้องกันข้อความขึ้นบรรทัดใหม่ */
+      }
+      /* ซ่อนวงกลม Radio */
+      [data-testid="stRadio"] label > div:first-child {
+        display: none !important;
+      }
+      [data-testid="stRadio"] label p {
+        margin: 0 !important;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+      /* Hover Effect */
+      [data-testid="stRadio"] label:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+      }
+      /* Active State (ปุ่มที่ถูกเลือก) */
+      [data-testid="stRadio"] label:has(input:checked) {
+        background: linear-gradient(135deg, var(--violet), #8a7bff) !important;
+        box-shadow: 0 4px 14px rgba(108, 99, 255, 0.45);
+      }
+      [data-testid="stRadio"] label:has(input:checked) p {
+        color: #ffffff !important;
+        font-weight: 600;
+      }
+
+      /* === Responsive สำหรับหน้าจอมือถือ/แท็บเล็ต (Screen < 768px) === */
+      @media (max-width: 768px) {
+        [data-testid="stRadio"] [role="radiogroup"] {
+          flex-wrap: nowrap !important; /* จอมือถือให้เลื่อนแนวนอน (Horizontal Scroll) */
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 0.3rem;
+        }
+        [data-testid="stRadio"] [role="radiogroup"]::-webkit-scrollbar {
+          display: none; /* ซ่อนแถบ scrollbar บนมือถือเพื่อความสวยงาม */
+        }
+        [data-testid="stRadio"] label {
+          padding: 0.45rem 0.75rem !important;
+          flex: 0 0 auto; /* จอมือถือขนาดปุ่มจะพอดีกับข้อความ */
+        }
+        [data-testid="stRadio"] label p {
+          font-size: 0.82rem;
+        }
+      }
 
       .pagehead {border-bottom:none; border-left:4px solid var(--amber); padding:.1rem 0 .1rem 1rem;}
       .tile {position:relative; overflow:hidden;}
