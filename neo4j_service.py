@@ -7,10 +7,6 @@ import streamlit as st
 from neo4j import GraphDatabase, RoutingControl
 
 
-# Sentinel for "leave the stored image unchanged" (None means "remove the image").
-KEEP_IMAGE: Any = object()
-
-
 # ───────────────────────── Connection ─────────────────────────
 def _config() -> tuple[str, str, str, str]:
     cfg = st.secrets["neo4j"]
@@ -46,19 +42,6 @@ def query(cypher: str, parameters: dict[str, Any] | None = None, *, write: bool 
 def ping() -> bool:
     rows = query("RETURN 1 AS ok")
     return bool(rows and rows[0]["ok"] == 1)
-
-
-_IMAGE_TARGETS = {"User": "user_id", "Game": "game_id"}
-
-
-def set_image(label: str, entity_id: str, image: str | None) -> None:
-    """Set (data-URI string) or remove (None) the `image` property of a User / Game node."""
-    key = _IMAGE_TARGETS[label]  # whitelist: never interpolate caller-supplied labels
-    query(
-        f"MATCH (n:{label} {{{key}:$id}}) SET n.image = $image",
-        {"id": entity_id, "image": image},
-        write=True,
-    )
 
 
 def next_id(label: str, prop: str, prefix: str, width: int = 3) -> str:
@@ -262,22 +245,16 @@ def genre_stats() -> list[dict[str, Any]]:
 
 
 # ───────────────────────── Users ─────────────────────────
-def get_users(with_image: bool = False) -> list[dict[str, Any]]:
-    rows = query(
+def get_users() -> list[dict[str, Any]]:
+    return query(
         """
         MATCH (u:User)
         RETURN u.user_id AS user_id, u.name AS name, u.platform AS platform, u.level AS level,
                COUNT { (u)-[:PLAYED]->() } AS games,
-               COUNT { (u)-[:FRIEND_OF]-() } AS friends,
-               CASE WHEN $with_image THEN u.image END AS image
+               COUNT { (u)-[:FRIEND_OF]-() } AS friends
         ORDER BY u.user_id
-        """,
-        {"with_image": with_image},
+        """
     )
-    if not with_image:
-        for row in rows:
-            row.pop("image", None)
-    return rows
 
 
 def get_profile(user_id: str) -> dict[str, Any] | None:
@@ -288,7 +265,7 @@ def get_profile(user_id: str) -> dict[str, Any] | None:
         WITH u, collect(DISTINCT gn.name) AS interests
         OPTIONAL MATCH (u)-[r:PLAYED]->(g:Game)
         RETURN u.user_id AS user_id, u.name AS name, u.platform AS platform, u.level AS level,
-               u.image AS image, interests,
+               interests,
                collect(DISTINCT {game_id:g.game_id, title:g.title, rating:r.rating,
                                  play_date:toString(r.play_date)}) AS played
         """,
@@ -301,11 +278,8 @@ def get_profile(user_id: str) -> dict[str, Any] | None:
     return row
 
 
-def save_user(
-    user_id: str, name: str, platform: str, level: int, interests: list[str],
-    image: Any = KEEP_IMAGE,
-) -> None:
-    """Create or update a user, replace liked genres, and optionally set/remove the photo."""
+def save_user(user_id: str, name: str, platform: str, level: int, interests: list[str]) -> None:
+    """Create or update a user, and replace the user's liked genres."""
     query(
         """
         MERGE (u:User {user_id:$user_id})
@@ -327,8 +301,6 @@ def save_user(
         {"user_id": user_id, "genres": interests},
         write=True,
     )
-    if image is not KEEP_IMAGE:
-        set_image("User", user_id, image)
 
 
 def delete_user(user_id: str) -> None:
@@ -339,7 +311,7 @@ def list_friends(user_id: str) -> list[dict[str, Any]]:
     return query(
         """
         MATCH (:User {user_id:$id})-[:FRIEND_OF]-(f:User)
-        RETURN DISTINCT f.user_id AS user_id, f.name AS name, f.platform AS platform, f.image AS image
+        RETURN DISTINCT f.user_id AS user_id, f.name AS name, f.platform AS platform
         ORDER BY f.user_id
         """,
         {"id": user_id},
@@ -365,8 +337,8 @@ def remove_friend(a: str, b: str) -> None:
 
 
 # ───────────────────────── Games ─────────────────────────
-def search_games(keyword: str = "", genre: str | None = None, with_image: bool = False) -> list[dict[str, Any]]:
-    rows = query(
+def search_games(keyword: str = "", genre: str | None = None) -> list[dict[str, Any]]:
+    return query(
         """
         MATCH (g:Game)
         OPTIONAL MATCH (d:Developer)-[:DEVELOPED]->(g)
@@ -377,23 +349,18 @@ def search_games(keyword: str = "", genre: str | None = None, with_image: bool =
           AND ($genre = '' OR $genre IN genres)
         RETURN g.game_id AS game_id, g.title AS title, g.year AS year,
                developers, genres,
-               COUNT { (:User)-[:PLAYED]->(g) } AS players,
-               CASE WHEN $with_image THEN g.image END AS image
+               COUNT { (:User)-[:PLAYED]->(g) } AS players
         ORDER BY g.title
         """,
-        {"keyword": keyword.strip(), "genre": genre or "", "with_image": with_image},
+        {"keyword": keyword.strip(), "genre": genre or ""},
     )
-    if not with_image:
-        for row in rows:
-            row.pop("image", None)
-    return rows
 
 
 def get_game_detail(game_id: str) -> dict[str, Any] | None:
     rows = query(
         """
         MATCH (g:Game {game_id:$id})
-        RETURN g.game_id AS game_id, g.title AS title, g.year AS year, g.image AS image,
+        RETURN g.game_id AS game_id, g.title AS title, g.year AS year,
                [(d:Developer)-[:DEVELOPED]->(g) | d.developer_id] AS developer_ids,
                [(g)-[:IN_GENRE]->(gn:Genre) | gn.name] AS genres
         """,
@@ -402,11 +369,8 @@ def get_game_detail(game_id: str) -> dict[str, Any] | None:
     return rows[0] if rows else None
 
 
-def save_game(
-    game_id: str, title: str, year: int | None, developer_ids: list[str], genres: list[str],
-    image: Any = KEEP_IMAGE,
-) -> None:
-    """Create or update a game with its developers and genres, and optionally set/remove the cover."""
+def save_game(game_id: str, title: str, year: int | None, developer_ids: list[str], genres: list[str]) -> None:
+    """Create or update a game together with its developers and genres."""
     query(
         "MERGE (g:Game {game_id:$id}) SET g.title = $title, g.year = $year",
         {"id": game_id, "title": title, "year": year},
@@ -436,8 +400,6 @@ def save_game(
         """,
         {"id": game_id, "genres": genres}, write=True,
     )
-    if image is not KEEP_IMAGE:
-        set_image("Game", game_id, image)
 
 
 def delete_game(game_id: str) -> None:
@@ -549,7 +511,7 @@ def recommend_games(user_id: str, limit: int = 8) -> list[dict[str, Any]]:
 
         OPTIONAL MATCH (d:Developer)-[:DEVELOPED]->(g)
         OPTIONAL MATCH (g)-[:IN_GENRE]->(allg:Genre)
-        RETURN g.game_id AS game_id, g.title AS title, g.year AS year, g.image AS image,
+        RETURN g.game_id AS game_id, g.title AS title, g.year AS year,
                collect(DISTINCT d.name) AS developers,
                collect(DISTINCT allg.name) AS genres,
                friend_count, friend_names, genre_matches, matched_genres,
