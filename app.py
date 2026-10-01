@@ -406,19 +406,7 @@ st.markdown(
 )
 page = MENU[
     st.segmented_control(
-        "เลือกเมนู",
-    options=[
-        "📊 ภาพรวม",
-        "✨ เกมแนะนำ",
-        "🎮 เกม",
-        "🧑‍🤝‍🧑 ผู้เล่น",
-        "📝 บันทึกการเล่น",
-        "🏷️ ค่ายและแนวเกม",
-        "🕸️ กราฟความสัมพันธ์",
-        "⚙️ ตั้งค่าระบบ",
-    ],
-    width="stretch",  # 👈 เพิ่มพารามิเตอร์นี้
-    label_visibility="collapsed",
+        "เมนู", list(MENU), default=list(MENU)[0], label_visibility="collapsed"
     )
 ]
 
