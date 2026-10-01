@@ -136,18 +136,6 @@ st.markdown(
 )
 
 
-# ───────────────────────── landing page gate ─────────────────────────
-import home  # noqa: E402
-
-if st.session_state.get("view", "home") == "home":
-    home.render()
-    st.stop()
-
-
-def _go_home() -> None:
-    st.session_state["view"] = "home"
-
-
 # ───────────────────────── helpers ─────────────────────────
 esc = html.escape
 AVATAR_SIZE, COVER_SIZE = (360, 360), (640, 360)
@@ -410,8 +398,6 @@ with st.sidebar:
     st.markdown('<div style="margin-top:.8rem; margin-bottom:1.2rem;"><span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>', unsafe_allow_html=True)
     page_key = st.radio("เมนูหลัก", list(MENU), label_visibility="collapsed")
     page = MENU[page_key]
-    st.divider()
-    st.button("← กลับหน้าแรก", on_click=_go_home, width="stretch", key="back_home")
 
 
 # ───────────────────────── Dashboard ─────────────────────────
