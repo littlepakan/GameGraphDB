@@ -401,11 +401,24 @@ st.markdown(
     f'<div class="topbar">{logo}<div><div class="brand">Game<b>Graph</b></div>'
     '<div class="brand-sub">ระบบแนะนำเกมด้วย Neo4j</div></div>'
     '<span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>',
+    
     unsafe_allow_html=True,
 )
 page = MENU[
     st.segmented_control(
-        "เมนู", list(MENU), default=list(MENU)[0], label_visibility="collapsed"
+        "เลือกเมนู",
+    options=[
+        "📊 ภาพรวม",
+        "✨ เกมแนะนำ",
+        "🎮 เกม",
+        "🧑‍🤝‍🧑 ผู้เล่น",
+        "📝 บันทึกการเล่น",
+        "🏷️ ค่ายและแนวเกม",
+        "🕸️ กราฟความสัมพันธ์",
+        "⚙️ ตั้งค่าระบบ",
+    ],
+    width="stretch",  # 👈 เพิ่มพารามิเตอร์นี้
+    label_visibility="collapsed",
     )
 ]
 
