@@ -387,8 +387,8 @@ MENU = {
 
 with st.sidebar:
     logo = '<div class="logo">🎮</div>'
-    if os.path.exists("kairung99.jpg"):
-        with open("kairung99.jpg", "rb") as fh:
+    if os.path.exists("p.png"):
+        with open("p.png", "rb") as fh:
             logo = f'<img class="logo" src="data:image/jpeg;base64,{base64.b64encode(fh.read()).decode()}">'
     st.markdown(
         f'<div class="topbar">{logo}<div><div class="brand">Game<b>Graph</b></div>'
