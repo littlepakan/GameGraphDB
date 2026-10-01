@@ -30,19 +30,7 @@ st.markdown(
         --bg:#0e1124; --panel:#161a36; --line:#2a3066; --text:#eceefb; --muted:#9aa0c8;
         --amber:#ffb347; --teal:#37d5c8; --rose:#ff6b8b; --violet:#6c63ff;
       }
-      div[data-testid="stSegmentedControl"] {
-  width: 100% !important;
-}
-div[data-testid="stSegmentedControl"] > div {
-  width: 100% !important;
-  display: flex !important;
-}
-div[data-testid="stSegmentedControl"] button,
-div[data-testid="stSegmentedControl"] [role="option"] {
-  flex: 1 1 0px !important;
-  justify-content: center !important;
-  text-align: center !important;
-}
+      
       .block-container {padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1240px;}
       h1, h2, h3, .display {font-family: 'Kanit', sans-serif !important; letter-spacing: 0;}
       [data-testid="stMarkdownContainer"] p, label, .stTextInput input, .stSelectbox, .stTabs button {
@@ -136,6 +124,20 @@ st.markdown(
       .rec {grid-template-columns:48px 168px 1fr;}
       .rec .cover {border-radius:10px;}
       @media (max-width: 760px) {.rec {grid-template-columns:1fr;} .status {display:none;}}
+      div[data-testid="stSegmentedControl"] {
+        width: 100% !important;
+        margin: .7rem 0 1.4rem;
+      }
+      div[data-testid="stSegmentedControl"] > div {
+        width: 100% !important;
+        display: flex !important;
+      }
+      div[data-testid="stSegmentedControl"] button,
+      div[data-testid="stSegmentedControl"] [role="option"] {
+        flex: 1 1 0px !important;
+        justify-content: center !important;
+        text-align: center !important;
+      }
     </style>
     """,
     unsafe_allow_html=True,
