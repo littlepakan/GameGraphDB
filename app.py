@@ -368,7 +368,7 @@ if "_flash" in st.session_state:
     st.toast(st.session_state.pop("_flash"), icon="✅")
 
 MENU = {
-    "📊  ภาพรวม": "dashboard",
+    "📊 ภาพรวม": "dashboard",
     "✨  เกมแนะนำ": "recommend",
     "🎮  เกม": "games",
     "🧑‍🤝‍🧑  ผู้เล่น": "players",
