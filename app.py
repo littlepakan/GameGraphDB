@@ -95,45 +95,14 @@ st.markdown(
       .status {margin-left:auto; font-size:.8rem; color:var(--teal); border:1px solid rgba(55,213,200,.4);
                background:rgba(55,213,200,.1); padding:.2rem .7rem; border-radius:999px; white-space:nowrap;}
 
-      * ปรับสไตล์ Radio ให้กลายเป็นปุ่มแท็บ */
-[data-testid="stRadio"] [role="radiogroup"] {
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 0.4rem;
-    margin: 0.7rem 0 1.4rem;
-}
-
-[data-testid="stRadio"] label {
-    padding: 0.5rem 1.1rem !important;
-    border-radius: 10px;
-    cursor: pointer;
-    margin: 0;
-    background: transparent;
-    transition: background 0.2s ease;
-}
-
-/* ซ่อนวงกลม radio indicator */
-[data-testid="stRadio"] label > div:first-child {
-    display: none !important;
-}
-
-[data-testid="stRadio"] label:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* สไตล์เมื่อปุ่มถูกเลือก */
-[data-testid="stRadio"] label:has(input:checked) {
-    background: linear-gradient(135deg, var(--violet), #8a7bff) !important;
-    box-shadow: 0 4px 14px rgba(108, 99, 255, 0.45);
-}
-
-[data-testid="stRadio"] label:has(input:checked) p {
-    color: #ffffff !important;
-    font-weight: 600;
-}
+      [data-testid="stRadio"] [role="radiogroup"] {gap:.3rem; flex-wrap:wrap; background:var(--panel);
+               border:1px solid var(--line); border-radius:14px; padding:.35rem; margin:.7rem 0 1.4rem;}
+      [data-testid="stRadio"] label {padding:.4rem .9rem; border-radius:10px; cursor:pointer; margin:0;}
+      [data-testid="stRadio"] label > div:first-child {display:none;}
+      [data-testid="stRadio"] label:hover {background:rgba(255,255,255,.06);}
+      [data-testid="stRadio"] label:has(input:checked) {background:linear-gradient(135deg, var(--violet), #8a7bff);
+               box-shadow:0 4px 14px rgba(108,99,255,.45);}
+      [data-testid="stRadio"] label:has(input:checked) p {color:#fff; font-weight:600;}
 
       .pagehead {border-bottom:none; border-left:4px solid var(--amber); padding:.1rem 0 .1rem 1rem;}
       .tile {position:relative; overflow:hidden;}
@@ -419,7 +388,13 @@ st.markdown(
     '<span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>',
     unsafe_allow_html=True,
 )
-page = MENU[st.radio("เมนู", list(MENU), horizontal=True, label_visibility="collapsed")]
+selected_menu = st.segmented_control(
+    "เมนู",
+    options=list(MENU),
+    default=list(MENU)[0],
+    label_visibility="collapsed"
+)
+page = MENU[selected_menu or list(MENU)[0]]
 
 
 # ───────────────────────── Dashboard ─────────────────────────
