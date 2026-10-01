@@ -94,8 +94,9 @@ def seed_demo_data() -> None:
         {"developer_id": "D02", "name": "Aether Interactive"},
         {"developer_id": "D03", "name": "CyberNet Games"},
         {"developer_id": "D04", "name": "MythicForge Entertainment"},
+        {"developer_id": "D05", "name": "Other Dev House"},
     ]
-    genres = ["Action RPG", "Cyberpunk", "Turn-Based Strategy", "Survival", "Sci-Fi", "Open World"]
+    genres = ["Action RPG", "Cyberpunk", "Turn-Based Strategy", "Survival", "Sci-Fi", "Open World", "FPS", "Adventure", "Puzzle", "Simulation", "Bullet Hell", "Platformer", "Horror", "Stealth", "Sandbox"]
 
     query(
         """
