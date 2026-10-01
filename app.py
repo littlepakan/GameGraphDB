@@ -16,7 +16,7 @@ st.set_page_config(
     page_title="GameGraph",
     page_icon="🎮",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 PLATFORMS = ["PC / Steam", "PC / Epic", "PlayStation 5", "Xbox Series X", "Nintendo Switch", "Mobile"]
@@ -35,10 +35,9 @@ st.markdown(
       [data-testid="stMarkdownContainer"] p, label, .stTextInput input, .stSelectbox, .stTabs button {
         font-family: 'IBM Plex Sans Thai', sans-serif;
       }
-      [data-testid="stSidebar"] {border-right: 1px solid var(--line);}
-      .brand {font-family:'Kanit',sans-serif; font-size:1.7rem; font-weight:700; line-height:1.1;}
+      .brand {font-family:'Kanit',sans-serif; font-size:1.5rem; font-weight:700; line-height:1.1;}
       .brand b {color: var(--amber); font-weight:700;}
-      .brand-sub {color: var(--muted); font-size:.85rem; margin-top:.2rem;}
+      .brand-sub {color: var(--muted); font-size:.8rem; margin-top:.2rem;}
 
       .pagehead {border-bottom:1px solid var(--line); padding-bottom:.9rem; margin-bottom:1.3rem;}
       .pagehead h1 {font-size:2.1rem; margin:0; padding:0; line-height:1.15;}
@@ -80,91 +79,37 @@ st.markdown(
 st.markdown(
     """
     <style>
-      [data-testid="stSidebar"], [data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"] {display:none !important;}
+      [data-testid="stSidebar"] {
+        background: var(--panel);
+        border-right: 1px solid var(--line);
+      }
       [data-testid="stHeader"] {background: transparent;}
       .stApp {background:
         radial-gradient(900px 420px at 88% -90px, rgba(108,99,255,.30), transparent 70%),
         radial-gradient(700px 380px at 0% -70px, rgba(255,179,71,.15), transparent 70%), var(--bg);
         color: var(--text);}
-      .block-container {padding-top: .9rem;}
+      .block-container {padding-top: 1.5rem;}
 
-      .topbar {display:flex; align-items:center; gap:.9rem; padding:.7rem 1.1rem; border:1px solid var(--line);
+      .topbar {display:flex; align-items:center; gap:.8rem; padding:.7rem .9rem; border:1px solid var(--line);
                border-radius:16px; background:linear-gradient(135deg, rgba(22,26,54,.95), rgba(34,38,88,.95));}
-      .logo {width:46px; height:46px; border-radius:12px; object-fit:cover; display:grid; place-items:center;
-             font-size:1.5rem; background:linear-gradient(135deg, var(--amber), var(--rose)); flex:none;}
-      .status {margin-left:auto; font-size:.8rem; color:var(--teal); border:1px solid rgba(55,213,200,.4);
-               background:rgba(55,213,200,.1); padding:.2rem .7rem; border-radius:999px; white-space:nowrap;}
+      .logo {width:42px; height:42px; border-radius:12px; object-fit:cover; display:grid; place-items:center;
+             font-size:1.3rem; background:linear-gradient(135deg, var(--amber), var(--rose)); flex:none;}
+      .status {display:inline-block; font-size:.78rem; color:var(--teal); border:1px solid rgba(55,213,200,.4);
+               background:rgba(55,213,200,.1); padding:.2rem .6rem; border-radius:999px; white-space:nowrap;}
 
-      /* === Responsive Radio Menu (Button Group) === */
-      [data-testid="stRadio"] {
-        width: 100%;
+      [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+        gap: .35rem; display: flex; flex-direction: column; background: transparent; border: none; padding: 0; margin: .5rem 0 1rem;
       }
-      [data-testid="stRadio"] [role="radiogroup"] {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 0.4rem !important;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 16px; /* โค้งมนเท่ากับ topbar */
-        padding: 0.4rem;
-        margin: 0.8rem 0 1.4rem 0;
-        width: 100%;
-        box-sizing: border-box;
+      [data-testid="stSidebar"] [data-testid="stRadio"] label {
+        padding: .5rem .8rem; border-radius: 10px; cursor: pointer; margin: 0; transition: all 0.2s;
       }
-      [data-testid="stRadio"] label {
-        flex: 1 1 auto; /* ขยายปุ่มให้เต็มความกว้างเท่าๆ กันทุกปุ่ม */
-        text-align: center;
-        justify-content: center;
-        padding: 0.55rem 0.8rem !important;
-        border-radius: 10px;
-        cursor: pointer;
-        margin: 0 !important;
-        background: transparent;
-        transition: all 0.2s ease-in-out;
-        min-width: max-content; /* ป้องกันข้อความขึ้นบรรทัดใหม่ */
+      [data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child {display:none;}
+      [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {background: rgba(255,255,255,.06);}
+      [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+        background: linear-gradient(135deg, var(--violet), #8a7bff);
+        box-shadow: 0 4px 14px rgba(108,99,255,.45);
       }
-      /* ซ่อนวงกลม Radio */
-      [data-testid="stRadio"] label > div:first-child {
-        display: none !important;
-      }
-      [data-testid="stRadio"] label p {
-        margin: 0 !important;
-        font-size: 0.9rem;
-        white-space: nowrap;
-      }
-      /* Hover Effect */
-      [data-testid="stRadio"] label:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
-      }
-      /* Active State (ปุ่มที่ถูกเลือก) */
-      [data-testid="stRadio"] label:has(input:checked) {
-        background: linear-gradient(135deg, var(--violet), #8a7bff) !important;
-        box-shadow: 0 4px 14px rgba(108, 99, 255, 0.45);
-      }
-      [data-testid="stRadio"] label:has(input:checked) p {
-        color: #ffffff !important;
-        font-weight: 600;
-      }
-
-      /* === Responsive สำหรับหน้าจอมือถือ/แท็บเล็ต (Screen < 768px) === */
-      @media (max-width: 768px) {
-        [data-testid="stRadio"] [role="radiogroup"] {
-          flex-wrap: nowrap !important; /* จอมือถือให้เลื่อนแนวนอน (Horizontal Scroll) */
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          padding: 0.3rem;
-        }
-        [data-testid="stRadio"] [role="radiogroup"]::-webkit-scrollbar {
-          display: none; /* ซ่อนแถบ scrollbar บนมือถือเพื่อความสวยงาม */
-        }
-        [data-testid="stRadio"] label {
-          padding: 0.45rem 0.75rem !important;
-          flex: 0 0 auto; /* จอมือถือขนาดปุ่มจะพอดีกับข้อความ */
-        }
-        [data-testid="stRadio"] label p {
-          font-size: 0.82rem;
-        }
-      }
+      [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {color: #fff; font-weight: 600;}
 
       .pagehead {border-bottom:none; border-left:4px solid var(--amber); padding:.1rem 0 .1rem 1rem;}
       .tile {position:relative; overflow:hidden;}
@@ -437,20 +382,22 @@ MENU = {
     "📝  บันทึกการเล่น": "plays",
     "🏷️  ค่ายและแนวเกม": "catalog",
     "🕸️  กราฟความสัมพันธ์": "graph",
-    "⚙️  ตั้งค่าระบบ": "setup",
+    "⚙️️  ตั้งค่าระบบ": "setup",
 }
 
-logo = '<div class="logo">🎮</div>'
-if os.path.exists("kairung99.jpg"):
-    with open("kairung99.jpg", "rb") as fh:
-        logo = f'<img class="logo" src="data:image/jpeg;base64,{base64.b64encode(fh.read()).decode()}">'
-st.markdown(
-    f'<div class="topbar">{logo}<div><div class="brand">Game<b>Graph</b></div>'
-    '<div class="brand-sub">ระบบแนะนำเกมด้วย Neo4j</div></div>'
-    '<span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>',
-    unsafe_allow_html=True,
-)
-page = MENU[st.radio("เมนู", list(MENU), horizontal=True, label_visibility="collapsed")]
+with st.sidebar:
+    logo = '<div class="logo">🎮</div>'
+    if os.path.exists("kairung99.jpg"):
+        with open("kairung99.jpg", "rb") as fh:
+            logo = f'<img class="logo" src="data:image/jpeg;base64,{base64.b64encode(fh.read()).decode()}">'
+    st.markdown(
+        f'<div class="topbar">{logo}<div><div class="brand">Game<b>Graph</b></div>'
+        '<div class="brand-sub">ระบบแนะนำเกมด้วย Neo4j</div></div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div style="margin-top:.8rem; margin-bottom:1.2rem;"><span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>', unsafe_allow_html=True)
+    page_key = st.radio("เมนูหลัก", list(MENU), label_visibility="collapsed")
+    page = MENU[page_key]
 
 
 # ───────────────────────── Dashboard ─────────────────────────
