@@ -98,7 +98,7 @@ st.markdown(
       [data-testid="stRadio"] [role="radiogroup"] {gap:.3rem; flex-wrap:wrap; background:var(--panel);
                border:1px solid var(--line); border-radius:14px; padding:.35rem; margin:.7rem 0 1.4rem;}
       [data-testid="stRadio"] label {padding:.4rem .9rem; border-radius:10px; cursor:pointer; margin:0;}
-      [data-testid="stRadio"] label[data-baseweb="radio"] > :not(:has([data-testid="stMarkdownContainer"])) {display:none !important;}
+      [data-testid="stRadio"] label > div:first-child {display:none;}
       [data-testid="stRadio"] label:hover {background:rgba(255,255,255,.06);}
       [data-testid="stRadio"] label:has(input:checked) {background:linear-gradient(135deg, var(--violet), #8a7bff);
                box-shadow:0 4px 14px rgba(108,99,255,.45);}
