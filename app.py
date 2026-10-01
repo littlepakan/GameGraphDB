@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import base64
 import html
+import io
 import os
 from datetime import date
 
 import pandas as pd
 import streamlit as st
+from PIL import Image, ImageOps
 
 import neo4j_service as db
 
@@ -13,7 +16,7 @@ st.set_page_config(
     page_title="GameGraph",
     page_icon="🎮",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 PLATFORMS = ["PC / Steam", "PC / Epic", "PlayStation 5", "Xbox Series X", "Nintendo Switch", "Mobile"]
@@ -74,8 +77,139 @@ st.markdown(
 )
 
 
+st.markdown(
+    """
+    <style>
+      [data-testid="stSidebar"], [data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"] {display:none !important;}
+      [data-testid="stHeader"] {background: transparent;}
+      .stApp {background:
+        radial-gradient(900px 420px at 88% -90px, rgba(108,99,255,.30), transparent 70%),
+        radial-gradient(700px 380px at 0% -70px, rgba(255,179,71,.15), transparent 70%), var(--bg);
+        color: var(--text);}
+      .block-container {padding-top: .9rem;}
+
+      .topbar {display:flex; align-items:center; gap:.9rem; padding:.7rem 1.1rem; border:1px solid var(--line);
+               border-radius:16px; background:linear-gradient(135deg, rgba(22,26,54,.95), rgba(34,38,88,.95));}
+      .logo {width:46px; height:46px; border-radius:12px; object-fit:cover; display:grid; place-items:center;
+             font-size:1.5rem; background:linear-gradient(135deg, var(--amber), var(--rose)); flex:none;}
+      .status {margin-left:auto; font-size:.8rem; color:var(--teal); border:1px solid rgba(55,213,200,.4);
+               background:rgba(55,213,200,.1); padding:.2rem .7rem; border-radius:999px; white-space:nowrap;}
+
+      [data-testid="stRadio"] [role="radiogroup"] {gap:.3rem; flex-wrap:wrap; background:var(--panel);
+               border:1px solid var(--line); border-radius:14px; padding:.35rem; margin:.7rem 0 1.4rem;}
+      [data-testid="stRadio"] label {padding:.4rem .9rem; border-radius:10px; cursor:pointer; margin:0;}
+      [data-testid="stRadio"] label > div:first-child {display:none;}
+      [data-testid="stRadio"] label:hover {background:rgba(255,255,255,.06);}
+      [data-testid="stRadio"] label:has(input:checked) {background:linear-gradient(135deg, var(--violet), #8a7bff);
+               box-shadow:0 4px 14px rgba(108,99,255,.45);}
+      [data-testid="stRadio"] label:has(input:checked) p {color:#fff; font-weight:600;}
+
+      .pagehead {border-bottom:none; border-left:4px solid var(--amber); padding:.1rem 0 .1rem 1rem;}
+      .tile {position:relative; overflow:hidden;}
+      .tile::before {content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent, var(--amber));}
+
+      .gcard {background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; margin-bottom:1rem;}
+      .gcard:hover {border-color:var(--violet);}
+      .gbody {padding:.8rem 1rem 1rem;}
+      .gbody h4 {margin:0; font-family:'Kanit',sans-serif; font-size:1.05rem;}
+      .pcard {text-align:center; padding:1.2rem 1rem;}
+      .pcard .avatar {margin:0 auto .6rem;}
+      .cover {width:100%; aspect-ratio:16/9; object-fit:cover; display:block;}
+      .cover.ph {display:grid; place-items:center; font-size:2.4rem;}
+      .avatar {border-radius:50%; object-fit:cover; display:grid; place-items:center; color:#fff;
+               font-family:'Kanit',sans-serif; font-weight:600; flex:none;}
+      .rowuser {display:flex; align-items:center; gap:.7rem;}
+
+      .rec {grid-template-columns:48px 168px 1fr;}
+      .rec .cover {border-radius:10px;}
+      @media (max-width: 760px) {.rec {grid-template-columns:1fr;} .status {display:none;}}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 # ───────────────────────── helpers ─────────────────────────
 esc = html.escape
+AVATAR_SIZE, COVER_SIZE = (360, 360), (640, 360)
+IMG_TYPES = ["png", "jpg", "jpeg", "webp"]
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def images(label: str) -> dict[str, str]:
+    return db.get_images(label)
+
+
+def process_image(file, size: tuple[int, int]) -> str:
+    """Crop to the target ratio, shrink, and return a compact JPEG data-URI (~30-80 KB)."""
+    img = ImageOps.exif_transpose(Image.open(file)).convert("RGB")
+    img = ImageOps.fit(img, size, Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=85, optimize=True)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+def _grad(seed: str) -> str:
+    h = sum(ord(c) for c in seed) * 37 % 360
+    return f"linear-gradient(135deg,hsl({h} 65% 52%),hsl({(h + 55) % 360} 65% 38%))"
+
+
+def avatar(name: str, img: str | None = None, size: int = 64) -> str:
+    if img:
+        return f'<img class="avatar" src="{img}" style="width:{size}px;height:{size}px">'
+    ini = esc((name or "?").strip()[:1].upper())
+    return (f'<div class="avatar" style="width:{size}px;height:{size}px;font-size:{size * .42:.0f}px;'
+            f'background:{_grad(name or "?")}">{ini}</div>')
+
+
+def cover(title: str, img: str | None = None) -> str:
+    if img:
+        return f'<img class="cover" src="{img}">'
+    return f'<div class="cover ph" style="background:{_grad(title or "?")}">🎮</div>'
+
+
+def photo_key(form_key: str) -> str:
+    return f"{form_key}_img_{st.session_state.get('_imgver', 0)}"
+
+
+def _bump_img() -> None:
+    st.session_state["_imgver"] = st.session_state.get("_imgver", 0) + 1
+
+
+def save_with_image(saver, label: str, item_id: str, photo, *args) -> None:
+    saver(*args)
+    if photo is not None:
+        db.set_image(label, item_id, process_image(photo, AVATAR_SIZE if label == "User" else COVER_SIZE))
+    _bump_img()
+
+
+def _save_image(label: str, item_id: str, file) -> None:
+    db.set_image(label, item_id, process_image(file, AVATAR_SIZE if label == "User" else COVER_SIZE))
+    _bump_img()
+
+
+def _remove_image(label: str, item_id: str) -> None:
+    db.remove_image(label, item_id)
+    _bump_img()
+
+
+def image_panel(label: str, item_id: str, name: str) -> None:
+    """Preview of the current image + upload / replace / delete controls."""
+    cur = images(label).get(item_id)
+    if label == "User":
+        st.markdown(f'<div style="display:grid;place-items:center;margin-bottom:.5rem">{avatar(name, cur, 150)}</div>',
+                    unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="gcard">{cover(name, cur)}</div>', unsafe_allow_html=True)
+    up = st.file_uploader("เลือกรูปใหม่ (PNG / JPG / WEBP)", type=IMG_TYPES,
+                          key=f"img_{label}_{item_id}_{st.session_state.get('_imgver', 0)}")
+    if up is not None:
+        st.image(up, caption="ตัวอย่างรูปที่เลือก (ระบบจะครอปกึ่งกลางให้อัตโนมัติ)")
+    c1, c2 = st.columns(2)
+    if c1.button("เปลี่ยนรูป" if cur else "บันทึกรูป", type="primary", disabled=up is None, key=f"imgsave_{label}_{item_id}"):
+        do(_save_image, "บันทึกรูปแล้ว", label, item_id, up)
+    if c2.button("🗑️ ลบรูป", disabled=not cur, key=f"imgdel_{label}_{item_id}"):
+        do(_remove_image, "ลบรูปแล้ว", label, item_id)
 
 
 def page_header(title: str, sub: str) -> None:
@@ -87,7 +221,7 @@ def page_header(title: str, sub: str) -> None:
 
 def tile(col, number, label: str, color: str) -> None:
     col.markdown(
-        f'<div class="tile"><div class="n" style="color:{color}">{number}</div>'
+        f'<div class="tile" style="--accent:{color}"><div class="n" style="color:{color}">{number}</div>'
         f'<div class="l">{esc(label)}</div></div>',
         unsafe_allow_html=True,
     )
@@ -104,6 +238,7 @@ def do(fn, ok: str, *args, **kwargs) -> None:
     except Exception as exc:  # noqa: BLE001
         st.error(f"ดำเนินการไม่สำเร็จ: {exc}")
         return
+    st.cache_data.clear()
     st.session_state["_flash"] = ok
     st.rerun()
 
@@ -190,7 +325,7 @@ def to_date(value) -> date:
 
 
 # ───────────────────────── reusable forms ─────────────────────────
-def user_form(key: str, d: dict, submit_label: str):
+def user_form(key: str, d: dict, submit_label: str, with_photo: bool = False):
     genres = db.list_genres()
     plats = PLATFORMS if (not d["platform"] or d["platform"] in PLATFORMS) else [d["platform"]] + PLATFORMS
     with st.form(key):
@@ -204,11 +339,13 @@ def user_form(key: str, d: dict, submit_label: str):
         interests = st.multiselect(
             "แนวเกมที่ชอบ", genres, default=[x for x in d["interests"] if x in genres], key=f"{key}_int"
         )
+        if with_photo:
+            st.file_uploader("รูปผู้เล่น (ไม่บังคับ)", type=IMG_TYPES, key=photo_key(key))
         submit = st.form_submit_button(submit_label, type="primary")
     return submit, name.strip(), platform, int(level), interests
 
 
-def game_form(key: str, d: dict, submit_label: str):
+def game_form(key: str, d: dict, submit_label: str, with_photo: bool = False):
     devs = {x["developer_id"]: x["name"] for x in db.list_developers()}
     genres = db.list_genres()
     with st.form(key):
@@ -219,6 +356,8 @@ def game_form(key: str, d: dict, submit_label: str):
             format_func=lambda x: devs[x], key=f"{key}_dev",
         )
         gs = st.multiselect("แนวเกม", genres, default=[x for x in d["genres"] if x in genres], key=f"{key}_gen")
+        if with_photo:
+            st.file_uploader("รูปปกเกม (ไม่บังคับ)", type=IMG_TYPES, key=photo_key(key))
         submit = st.form_submit_button(submit_label, type="primary")
     return submit, title.strip(), int(year), dev_ids, gs
 
@@ -239,13 +378,17 @@ MENU = {
     "⚙️  ตั้งค่าระบบ": "setup",
 }
 
-with st.sidebar:
-    if os.path.exists("kairung99.jpg"):
-        st.image("kairung99.jpg", width=84)
-    st.markdown('<div class="brand">Game<b>Graph</b></div>', unsafe_allow_html=True)
-    st.markdown('<div class="brand-sub">ระบบแนะนำเกมด้วย Neo4j</div>', unsafe_allow_html=True)
-    st.write("")
-    page = MENU[st.radio("เมนู", list(MENU), label_visibility="collapsed")]
+logo = '<div class="logo">🎮</div>'
+if os.path.exists("kairung99.jpg"):
+    with open("kairung99.jpg", "rb") as fh:
+        logo = f'<img class="logo" src="data:image/jpeg;base64,{base64.b64encode(fh.read()).decode()}">'
+st.markdown(
+    f'<div class="topbar">{logo}<div><div class="brand">Game<b>Graph</b></div>'
+    '<div class="brand-sub">ระบบแนะนำเกมด้วย Neo4j</div></div>'
+    '<span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>',
+    unsafe_allow_html=True,
+)
+page = MENU[st.radio("เมนู", list(MENU), horizontal=True, label_visibility="collapsed")]
 
 
 # ───────────────────────── Dashboard ─────────────────────────
@@ -284,8 +427,9 @@ if page == "dashboard":
             lvl = min(100, int(profile["level"] or 0))
             st.markdown(
                 f"""<div class="profile">
-                <h3>{esc(profile['name'] or '')}</h3>
-                <div class="meta">{esc(profile['user_id'])} · {esc(profile['platform'] or '-')}</div>
+                <div class="rowuser" style="margin-bottom:.7rem">{avatar(profile['name'], images("User").get(profile['user_id']), 72)}
+                <div><h3 style="margin:0">{esc(profile['name'] or '')}</h3>
+                <div class="meta" style="margin:0">{esc(profile['user_id'])} · {esc(profile['platform'] or '-')}</div></div></div>
                 <div class="kv">เลเวล {profile['level']}</div>
                 <div class="lvl"><span style="width:{lvl}%"></span></div>
                 <div class="kv">แนวเกมที่ชอบ</div>
@@ -316,6 +460,7 @@ elif page == "recommend":
         st.caption("คะแนน = เพื่อนเล่น × 3 + แนวเกมตรงกัน × 2 + จำนวนผู้เล่น × 0.20 + คะแนนรีวิวเฉลี่ย × 0.50")
         if not rows:
             st.info("ยังไม่มีคำแนะนำ — ลองเพิ่มเพื่อน แนวเกมที่ชอบ หรือประวัติการเล่นให้ผู้เล่นคนนี้")
+        gimgs = images("Game")
         for i, row in enumerate(rows, start=1):
             matched = set(row.get("matched_genres") or [])
             chips = "".join(chip(g, g in matched) for g in (row.get("genres") or []))
@@ -325,6 +470,7 @@ elif page == "recommend":
             st.markdown(
                 f"""<div class="rec">
                   <div class="rank">{i}</div>
+                  <div>{cover(row['title'], gimgs.get(row['game_id']))}</div>
                   <div>
                     <div class="rec-top"><h3>{esc(row['title'] or '')}</h3>
                       <div class="score">{row['score']:.2f}<small>คะแนน</small></div></div>
@@ -349,44 +495,64 @@ elif page == "games":
         genre = c2.selectbox("แนวเกม", [""] + db.list_genres(), format_func=lambda x: "ทุกแนวเกม" if x == "" else x)
         rows = db.search_games(keyword, genre)
         st.caption(f"พบ {len(rows)} เกม")
+        gimgs = images("Game")
+        cols = st.columns(4)
+        for n, r in enumerate(rows):
+            with cols[n % 4]:
+                chips = "".join(chip(x) for x in r["genres"])
+                st.markdown(
+                    f'<div class="gcard">{cover(r["title"], gimgs.get(r["game_id"]))}<div class="gbody">'
+                    f'<h4>{esc(r["title"])}</h4><div class="meta">{r["year"] or "-"} · '
+                    f'{esc(", ".join(r["developers"]) or "ไม่ระบุผู้พัฒนา")}</div>{chips}'
+                    f'<div class="meta" style="margin:.4rem 0 0">👥 {r["players"]} ผู้เล่น</div></div></div>',
+                    unsafe_allow_html=True,
+                )
         if rows:
             df = pd.DataFrame(rows)
             df["developers"] = df["developers"].map(", ".join)
             df["genres"] = df["genres"].map(", ".join)
             df = df.rename(columns={"game_id": "รหัส", "title": "ชื่อเกม", "year": "ปี",
                                     "developers": "ผู้พัฒนา", "genres": "แนวเกม", "players": "ผู้เล่น"})
-            st.dataframe(df, hide_index=True)
+            with st.expander("ดูแบบตาราง"):
+                st.dataframe(df, hide_index=True)
         else:
             st.info("ไม่พบเกมที่ตรงกับเงื่อนไข ลองล้างช่องค้นหาหรือเพิ่มเกมใหม่ที่แท็บ “เพิ่มเกม”")
 
     with t2:
         with st.container(border=True):
             ok, title, year, dev_ids, gs = game_form(
-                "g_add", {"title": "", "year": date.today().year, "developer_ids": [], "genres": []}, "เพิ่มเกม"
+                "g_add", {"title": "", "year": date.today().year, "developer_ids": [], "genres": []}, "เพิ่มเกม",
+                with_photo=True,
             )
         if ok:
             if not title:
                 st.error("กรุณากรอกชื่อเกม")
             else:
                 gid = db.next_id("Game", "game_id", "G")
-                do(db.save_game, f"เพิ่มเกม {title} ({gid}) แล้ว", gid, title, year, dev_ids, gs)
+                do(save_with_image, f"เพิ่มเกม {title} ({gid}) แล้ว", db.save_game, "Game", gid,
+                   st.session_state.get(photo_key("g_add")), gid, title, year, dev_ids, gs)
 
     with t3:
         gid = pick_game("g_edit_sel", "เลือกเกมที่ต้องการแก้ไข")
         d = db.get_game_detail(gid) if gid else None
         if d:
-            with st.container(border=True):
-                ok, title, year, dev_ids, gs = game_form(f"g_edit_{gid}", d, "บันทึกการแก้ไข")
-            if ok:
-                if not title:
-                    st.error("กรุณากรอกชื่อเกม")
-                else:
-                    do(db.save_game, f"บันทึกเกม {title} แล้ว", gid, title, year, dev_ids, gs)
-            danger_zone(
-                "เกม", f"g_del_{gid}", db.delete_game, gid,
-                ok=f"ลบเกม {d['title']} แล้ว",
-                warning="การลบจะลบประวัติการเล่นและความสัมพันธ์ทั้งหมดของเกมนี้ และย้อนกลับไม่ได้",
-            )
+            left, right = st.columns([1, 2])
+            with left:
+                st.markdown("##### รูปปกเกม")
+                image_panel("Game", gid, d["title"])
+            with right:
+                with st.container(border=True):
+                    ok, title, year, dev_ids, gs = game_form(f"g_edit_{gid}", d, "บันทึกการแก้ไข")
+                if ok:
+                    if not title:
+                        st.error("กรุณากรอกชื่อเกม")
+                    else:
+                        do(db.save_game, f"บันทึกเกม {title} แล้ว", gid, title, year, dev_ids, gs)
+                danger_zone(
+                    "เกม", f"g_del_{gid}", db.delete_game, gid,
+                    ok=f"ลบเกม {d['title']} แล้ว",
+                    warning="การลบจะลบประวัติการเล่น ความสัมพันธ์ และรูปปกของเกมนี้ และย้อนกลับไม่ได้",
+                )
 
 
 # ───────────────────────── Players ─────────────────────────
@@ -396,42 +562,63 @@ elif page == "players":
 
     with t1:
         users = db.get_users()
+        uimgs = images("User")
+        cols = st.columns(4)
+        for n, u in enumerate(users):
+            with cols[n % 4]:
+                lvl = min(100, int(u["level"] or 0))
+                st.markdown(
+                    f'<div class="gcard pcard">{avatar(u["name"], uimgs.get(u["user_id"]), 92)}'
+                    f'<h4 style="margin:0;font-family:Kanit,sans-serif">{esc(u["name"] or "")}</h4>'
+                    f'<div class="meta" style="margin:.1rem 0 .5rem">{esc(u["user_id"])} · {esc(u["platform"] or "-")}</div>'
+                    f'<div class="lvl"><span style="width:{lvl}%"></span></div>'
+                    f'<div class="meta" style="margin:0">เลเวล {u["level"]} · เล่น {u["games"]} เกม · เพื่อน {u["friends"]}</div></div>',
+                    unsafe_allow_html=True,
+                )
         if users:
             df = pd.DataFrame(users).rename(columns={
                 "user_id": "รหัส", "name": "ชื่อ", "platform": "แพลตฟอร์ม",
                 "level": "เลเวล", "games": "เกมที่เล่น", "friends": "เพื่อน"})
-            st.dataframe(df, hide_index=True)
+            with st.expander("ดูแบบตาราง"):
+                st.dataframe(df, hide_index=True)
         else:
             st.info("ยังไม่มีผู้เล่น เริ่มต้นที่แท็บ “เพิ่มผู้เล่น”")
 
     with t2:
         with st.container(border=True):
             ok, name, platform, level, interests = user_form(
-                "u_add", {"name": "", "platform": "", "level": 1, "interests": []}, "เพิ่มผู้เล่น"
+                "u_add", {"name": "", "platform": "", "level": 1, "interests": []}, "เพิ่มผู้เล่น",
+                with_photo=True,
             )
         if ok:
             if not name:
                 st.error("กรุณากรอกชื่อผู้เล่น")
             else:
                 uid = db.next_id("User", "user_id", "U")
-                do(db.save_user, f"เพิ่มผู้เล่น {name} ({uid}) แล้ว", uid, name, platform, level, interests)
+                do(save_with_image, f"เพิ่มผู้เล่น {name} ({uid}) แล้ว", db.save_user, "User", uid,
+                   st.session_state.get(photo_key("u_add")), uid, name, platform, level, interests)
 
     with t3:
         uid = pick_user("u_edit_sel", "เลือกผู้เล่นที่ต้องการแก้ไข")
         d = db.get_profile(uid) if uid else None
         if d:
-            with st.container(border=True):
-                ok, name, platform, level, interests = user_form(f"u_edit_{uid}", d, "บันทึกการแก้ไข")
-            if ok:
-                if not name:
-                    st.error("กรุณากรอกชื่อผู้เล่น")
-                else:
-                    do(db.save_user, f"บันทึกข้อมูล {name} แล้ว", uid, name, platform, level, interests)
-            danger_zone(
-                "ผู้เล่น", f"u_del_{uid}", db.delete_user, uid,
-                ok=f"ลบผู้เล่น {d['name']} แล้ว",
-                warning="การลบจะลบเพื่อน ประวัติการเล่น และแนวเกมที่ชอบของผู้เล่นคนนี้ และย้อนกลับไม่ได้",
-            )
+            left, right = st.columns([1, 2])
+            with left:
+                st.markdown("##### รูปผู้เล่น")
+                image_panel("User", uid, d["name"])
+            with right:
+                with st.container(border=True):
+                    ok, name, platform, level, interests = user_form(f"u_edit_{uid}", d, "บันทึกการแก้ไข")
+                if ok:
+                    if not name:
+                        st.error("กรุณากรอกชื่อผู้เล่น")
+                    else:
+                        do(db.save_user, f"บันทึกข้อมูล {name} แล้ว", uid, name, platform, level, interests)
+                danger_zone(
+                    "ผู้เล่น", f"u_del_{uid}", db.delete_user, uid,
+                    ok=f"ลบผู้เล่น {d['name']} แล้ว",
+                    warning="การลบจะลบเพื่อน ประวัติการเล่น แนวเกมที่ชอบ และรูปของผู้เล่นคนนี้ และย้อนกลับไม่ได้",
+                )
 
     with t4:
         uid = pick_user("u_friend_sel", "เลือกผู้เล่น")
@@ -440,9 +627,14 @@ elif page == "players":
             st.markdown(f"**เพื่อนปัจจุบัน ({len(friends)})**")
             if not friends:
                 st.caption("ยังไม่มีเพื่อน เพิ่มได้ด้านล่าง")
+            uimgs = images("User")
             for f in friends:
-                c1, c2 = st.columns([4, 1])
-                c1.write(f"{f['name']}  ·  {f['user_id']}  ·  {f['platform'] or '-'}")
+                c1, c2 = st.columns([4, 1], vertical_alignment="center")
+                c1.markdown(
+                    f'<div class="rowuser">{avatar(f["name"], uimgs.get(f["user_id"]), 38)}'
+                    f'<span>{esc(f["name"])} · {esc(f["user_id"])} · {esc(f["platform"] or "-")}</span></div>',
+                    unsafe_allow_html=True,
+                )
                 if c2.button("ลบเพื่อน", key=f"rmf_{uid}_{f['user_id']}"):
                     do(db.remove_friend, f"ลบ {f['name']} ออกจากเพื่อนแล้ว", uid, f["user_id"])
             st.divider()

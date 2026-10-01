@@ -542,3 +542,24 @@ def graph_neighborhood(user_id: str, limit: int = 60) -> list[dict[str, Any]]:
         """,
         {"user_id": user_id, "limit": int(limit)},
     )
+
+
+# ───────────────────────── Images (stored as data-URI on the node) ─────────────────────────
+_IMG_KEYS = {"User": "user_id", "Game": "game_id"}
+
+
+def get_images(label: str) -> dict[str, str]:
+    """Return {id: data_uri} for every User/Game that has an image."""
+    key = _IMG_KEYS[label]
+    rows = query(f"MATCH (n:{label}) WHERE n.image IS NOT NULL RETURN n.{key} AS id, n.image AS image")
+    return {r["id"]: r["image"] for r in rows}
+
+
+def set_image(label: str, item_id: str, data_uri: str) -> None:
+    key = _IMG_KEYS[label]
+    query(f"MATCH (n:{label} {{{key}:$id}}) SET n.image = $img", {"id": item_id, "img": data_uri}, write=True)
+
+
+def remove_image(label: str, item_id: str) -> None:
+    key = _IMG_KEYS[label]
+    query(f"MATCH (n:{label} {{{key}:$id}}) REMOVE n.image", {"id": item_id}, write=True)
