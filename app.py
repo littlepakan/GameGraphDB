@@ -388,7 +388,11 @@ st.markdown(
     '<span class="status">● เชื่อมต่อ Neo4j แล้ว</span></div>',
     unsafe_allow_html=True,
 )
-page = MENU[st.radio("เมนู", list(MENU), horizontal=True, label_visibility="collapsed")]
+page = MENU[
+    st.segmented_control(
+        "เมนู", list(MENU), default=list(MENU)[0], label_visibility="collapsed"
+    )
+]
 
 
 # ───────────────────────── Dashboard ─────────────────────────
