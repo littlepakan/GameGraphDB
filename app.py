@@ -45,13 +45,19 @@ st.markdown(
       .brand {font-family:'Kanit',sans-serif; font-size:1.7rem; font-weight:700; line-height:1.1;}
       .brand b {color: var(--amber); font-weight:700;}
       .brand-sub {color: var(--muted); font-size:.85rem; margin-top:.2rem;}
-      .st-key-nav {margin-bottom:1.1rem;}
+      /* the sidebar is unused: navigation lives in the top bar */
+      [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {display:none !important;}
+      .st-key-nav {position:sticky; top:2.9rem; z-index:99; margin-bottom:1.1rem; padding:.55rem 0;
+                   background:rgba(14,17,36,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--line);}
       .st-key-nav [role="radiogroup"] {gap:.45rem; flex-wrap:wrap;}
       .st-key-nav label {background:var(--panel); border:1px solid var(--line); border-radius:999px;
                          padding:.35rem 1rem; margin:0; cursor:pointer; transition:border-color .15s, background .15s;}
       .st-key-nav label:hover {border-color:var(--violet);}
       .st-key-nav label > div:first-of-type {display:none;}
-      .st-key-nav label:has(input:checked) {background:var(--violet); border-color:var(--violet);}
+      .st-key-nav label:has(input:checked) {background:var(--violet); border-color:var(--violet); font-weight:600;}
+      .st-key-nav label:has(input:focus-visible) {outline:2px solid var(--amber); outline-offset:2px;}
+      .st-key-pager {margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line);}
+      .st-key-pager button {width:100%;}
       .st-key-nav label p {margin:0; font-size:.95rem; white-space:nowrap;}
 
       /* images */
@@ -107,7 +113,11 @@ st.markdown(
       .lvl {height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin:.3rem 0 .9rem;}
       .lvl span {display:block; height:100%; background:var(--amber);}
       .kv {color:var(--muted); font-size:.85rem; margin-top:.5rem;}
-      @media (max-width: 640px) {.rec {grid-template-columns:1fr;} .rec-top {flex-direction:column;}}
+      @media (max-width: 640px) {
+        .rec {grid-template-columns:1fr;} .rec-top {flex-direction:column;}
+        .st-key-nav [role="radiogroup"] {flex-wrap:nowrap; overflow-x:auto; padding-bottom:.3rem; scrollbar-width:thin;}
+        .st-key-nav label {padding:.3rem .8rem;}
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -261,19 +271,29 @@ def require_connection() -> None:
         st.stop()
 
 
+def user_label(u: dict) -> str:
+    return f"{u['user_id']} — {u['name']} ({u['platform']})"
+
+
 def pick_user(key: str, label: str = "เลือกผู้เล่น") -> str | None:
     users = db.get_users()
     if not users:
-        st.info("ยังไม่มีผู้เล่น — ไปที่เมนู “ผู้เล่น” เพื่อเพิ่มผู้เล่นคนแรก หรือสร้างข้อมูลตัวอย่างที่เมนู “ตั้งค่าระบบ”")
+        st.info("ยังไม่มีผู้เล่น เพิ่มผู้เล่นคนแรก หรือสร้างข้อมูลตัวอย่างได้เลย")
+        a, b, _ = st.columns([1, 1, 2])
+        a.button("🧑‍🤝‍🧑 เพิ่มผู้เล่น", key=f"{key}_go_players", on_click=goto, args=("players",))
+        b.button("⚙️ สร้างข้อมูลตัวอย่าง", key=f"{key}_go_setup", on_click=goto, args=("setup",))
         return None
-    labels = {f"{u['user_id']} — {u['name']} ({u['platform']})": u["user_id"] for u in users}
+    labels = {user_label(u): u["user_id"] for u in users}
+    if st.session_state.get(key) not in labels:
+        st.session_state.pop(key, None)
     return labels[st.selectbox(label, list(labels), key=key)]
 
 
 def pick_game(key: str, label: str = "เลือกเกม") -> str | None:
     games = db.search_games()
     if not games:
-        st.info("ยังไม่มีเกมในระบบ — ไปที่เมนู “เกม” เพื่อเพิ่มเกม")
+        st.info("ยังไม่มีเกมในระบบ เพิ่มเกมแรกได้เลย")
+        st.button("🎮 เพิ่มเกม", key=f"{key}_go_games", on_click=goto, args=("games",))
         return None
     labels = {f"{g['game_id']} — {g['title']}": g["game_id"] for g in games}
     return labels[st.selectbox(label, list(labels), key=key)]
@@ -381,7 +401,25 @@ st.markdown(
     '<div class="brand-sub">ระบบแนะนำเกมด้วย Neo4j</div></div></div>',
     unsafe_allow_html=True,
 )
-page = MENU[st.radio("เมนู", list(MENU), horizontal=True, label_visibility="collapsed", key="nav")]
+PAGE_LABEL = {v: k for k, v in MENU.items()}
+PAGE_KEYS = list(PAGE_LABEL)
+
+
+def goto(page_key: str, **state) -> None:
+    """on_click callback: switch menu page (optionally presetting widget values such as a selected player)."""
+    st.session_state["nav"] = PAGE_LABEL[page_key]
+    st.session_state.update(state)
+
+
+# deep link: open the page named in ?page=... on first load / refresh
+if "nav" not in st.session_state:
+    wanted = st.query_params.get("page", "dashboard")
+    st.session_state["nav"] = PAGE_LABEL.get(wanted, PAGE_LABEL["dashboard"])
+
+st.radio("เมนู", list(MENU), horizontal=True, label_visibility="collapsed", key="nav")
+page = MENU[st.session_state["nav"]]
+if st.query_params.get("page") != page:
+    st.query_params["page"] = page   # keeps the URL in sync so refresh / sharing lands on the same page
 
 
 # ───────────────────────── Dashboard ─────────────────────────
@@ -432,13 +470,20 @@ if page == "dashboard":
                 unsafe_allow_html=True,
             )
         with b:
+            q1, q2, q3 = st.columns(3)
+            q1.button("✨ ดูเกมแนะนำ", key="dash_go_rec", use_container_width=True, on_click=goto,
+                      args=("recommend",), kwargs={"rec_user": user_label(profile)})
+            q2.button("🕸️ ดูกราฟเพื่อน", key="dash_go_graph", use_container_width=True, on_click=goto,
+                      args=("graph",), kwargs={"graph_user": user_label(profile)})
+            q3.button("📝 บันทึกการเล่น", key="dash_go_plays", use_container_width=True, on_click=goto,
+                      args=("plays",), kwargs={"play_user": user_label(profile)})
             if profile["played"]:
                 df = pd.DataFrame(profile["played"]).rename(
                     columns={"game_id": "รหัส", "title": "เกม", "rating": "คะแนน", "play_date": "วันที่เล่น"}
                 )
                 st.dataframe(df, hide_index=True)
             else:
-                st.info("ผู้เล่นคนนี้ยังไม่มีประวัติการเล่น — เพิ่มได้ที่เมนู “บันทึกการเล่น”")
+                st.info("ผู้เล่นคนนี้ยังไม่มีประวัติการเล่น กดปุ่ม “บันทึกการเล่น” ด้านบนเพื่อเพิ่ม")
 
 
 # ───────────────────────── Recommendations ─────────────────────────
@@ -454,6 +499,9 @@ elif page == "recommend":
         st.caption("คะแนน = เพื่อนเล่น × 3 + แนวเกมตรงกัน × 2 + จำนวนผู้เล่น × 0.20 + คะแนนรีวิวเฉลี่ย × 0.50")
         if not rows:
             st.info("ยังไม่มีคำแนะนำ — ลองเพิ่มเพื่อน แนวเกมที่ชอบ หรือประวัติการเล่นให้ผู้เล่นคนนี้")
+            a, b, _ = st.columns([1, 1, 2])
+            a.button("🧑‍🤝‍🧑 จัดการผู้เล่น / เพื่อน", key="rec_go_players", on_click=goto, args=("players",))
+            b.button("📝 บันทึกการเล่น", key="rec_go_plays", on_click=goto, args=("plays",))
         for i, row in enumerate(rows, start=1):
             matched = set(row.get("matched_genres") or [])
             chips = "".join(chip(g, g in matched) for g in (row.get("genres") or []))
@@ -808,3 +856,17 @@ elif page == "setup":
         ok="ล้างข้อมูลทั้งหมดแล้ว",
         warning="ข้อมูลทุก node และ relationship ในฐานข้อมูลนี้จะถูกลบ และย้อนกลับไม่ได้",
     )
+
+
+# ───────────────────────── Prev / Next pager ─────────────────────────
+_i = PAGE_KEYS.index(page)
+with st.container(key="pager"):
+    _l, _m, _r = st.columns([1, 1, 1], vertical_alignment="center")
+    if _i > 0:
+        _l.button(f"← {PAGE_LABEL[PAGE_KEYS[_i - 1]].strip()}", key="pg_prev", on_click=goto, args=(PAGE_KEYS[_i - 1],))
+    _m.markdown(
+        f'<div class="meta" style="text-align:center">หน้า {_i + 1} / {len(PAGE_KEYS)}</div>', unsafe_allow_html=True
+    )
+    if _i < len(PAGE_KEYS) - 1:
+        _r.button(f"{PAGE_LABEL[PAGE_KEYS[_i + 1]].strip()} →", key="pg_next", on_click=goto,
+                  args=(PAGE_KEYS[_i + 1],), type="primary")
