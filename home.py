@@ -11,13 +11,13 @@ import streamlit as st
 # ════════════════════════════════════════════════════════════════
 LINKS = {
     "intro_colab": "https://colab.research.google.com/drive/1HSW_zcuTOrRy9oSEF6OeOm5aZk8iRzrp?usp=sharing",
-    "intro_github": "",
-    "neo4j_github": "",
-    "recsys_colab": "",
-    "recsys_github": "",
-    "recsys_neo4j_colab": "",
-    "recsys_neo4j_github": "",
-    "gamegraph_github": "",
+    "intro_github": "https://github.com/mediuni/GameGraphDB/blob/main/Week2_664245056.ipynb",
+    "neo4j_github": "https://github.com/mediuni/GameGraphDB/blob/main/664245056_Neo4jGraphDB.pdf",
+    "recsys_colab": "https://colab.research.google.com/drive/1F6NlHCEr3OjVgNXJqCD3HBblgVGT4I-l?usp=sharing",
+    "recsys_github": "https://github.com/mediuni/GameGraphDB/blob/main/GameGenresRecommenderSystem.ipynb",
+    "recsys_neo4j_colab": "https://colab.research.google.com/drive/1Lqlh90eylLxEPic16uhgXmAVaxnvyq6O?usp=sharing",
+    "recsys_neo4j_github": "https://github.com/mediuni/GameGraphDB/blob/main/664245056_GameGenresRecommenderWithNeo4j.ipynb",
+    "gamegraph_github": "https://github.com/mediuni/GameGraphDB",
 }
 PDF_FILE = Path(__file__).parent / "664245056_Neo4jGraphDB.pdf"
 
