@@ -276,7 +276,7 @@ Login, Wishlist/Favorite, collaborative filtering, Graph Data Science (node simi
 
 ## 12. ผลงานและสไลด์นำเสนอ
 
-- ผลงาน
+**ผลงาน**
 
 https://github.com/mediuni/GameGraphDB/blob/main/Week2_664245056.ipynb
 
@@ -288,7 +288,7 @@ https://github.com/mediuni/GameGraphDB/blob/main/664245056_GameGenresRecommender
 
 https://github.com/mediuni/GameGraphDB (คุณอยู่ที่นี้อยู่แล้ว!)
 
-- สไลด์
+**สไลด์**
 
 https://canva.link/ckoc56p8h32vqv8
 
