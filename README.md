@@ -13,13 +13,13 @@
 
 หน้าแรกของเว็บ (`home.py`) แสดงผลงานเป็นการ์ด 5 ใบ ชิ้นสุดท้ายคือระบบ GameGraph ที่กดเข้าไปใช้งานจริง
 
-| # | ผลงาน | ไฟล์ | เนื้อหา |
-|---|-------|------|---------|
-| 1 | Intro of Advanced Database | `Week2_664245056.ipynb` | MySQL ผ่าน Python บน Colab: Transaction (ACID), Lost Update vs Atomic UPDATE, Isolation Level (Dirty Read), Deadlock + Retry, Redo Log / WAL, Lab Fake News Report |
-| 2 | Neo4jGraphDB | `664245056_Neo4jGraphDB.pdf` | บันทึกการทดลอง Neo4j: Constraint, ข้อมูลตัวอย่าง, query 1–2 hop, ระบบแนะนำหนังสือและชมรมจากเพื่อน |
-| 3 | GameGenresRecommenderSystem | `GameGenresRecommenderSystem.ipynb` | ระบบแนะนำแนวเกมแบบกราฟด้วย Python + NetworkX (`User -[:LIKES]-> Genre`) |
-| 4 | GameGenresRecommenderWithNeo4j | `664245056_GameGenresRecommenderWithNeo4j.ipynb` | ต่อยอดชิ้นที่ 3 ให้ใช้ Neo4j Aura ผ่าน Python Driver |
-| 5 | **GameGraph** | `app.py`, `home.py`, `neo4j_service.py` | เว็บระบบแนะนำเกมด้วย Neo4j แบบครบวงจร (หัวข้อ 2–5) |
+| #   | ผลงาน                          | ไฟล์                                             | เนื้อหา                                                                                                                                                            |
+| --- | ------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Intro of Advanced Database     | `Week2_664245056.ipynb`                          | MySQL ผ่าน Python บน Colab: Transaction (ACID), Lost Update vs Atomic UPDATE, Isolation Level (Dirty Read), Deadlock + Retry, Redo Log / WAL, Lab Fake News Report |
+| 2   | Neo4jGraphDB                   | `664245056_Neo4jGraphDB.pdf`                     | บันทึกการทดลอง Neo4j: Constraint, ข้อมูลตัวอย่าง, query 1–2 hop, ระบบแนะนำหนังสือและชมรมจากเพื่อน                                                                  |
+| 3   | GameGenresRecommenderSystem    | `GameGenresRecommenderSystem.ipynb`              | ระบบแนะนำแนวเกมแบบกราฟด้วย Python + NetworkX (`User -[:LIKES]-> Genre`)                                                                                            |
+| 4   | GameGenresRecommenderWithNeo4j | `664245056_GameGenresRecommenderWithNeo4j.ipynb` | ต่อยอดชิ้นที่ 3 ให้ใช้ Neo4j Aura ผ่าน Python Driver                                                                                                               |
+| 5   | **GameGraph**                  | `app.py`, `home.py`, `neo4j_service.py`          | เว็บระบบแนะนำเกมด้วย Neo4j แบบครบวงจร (หัวข้อ 2–5)                                                                                                                 |
 
 ### รายละเอียดชิ้นที่ 1–4
 
@@ -30,6 +30,7 @@ Dirty Read ระหว่าง `READ UNCOMMITTED` กับ `READ COMMITTED`, 
 และตรวจปริมาณ Redo Log จาก `Innodb_os_log_written`
 
 **ชิ้นที่ 2 — Neo4jGraphDB** (Cypher)
+
 - สร้าง Constraint ให้ `Student.student_id` และ `Book.book_id`
 - สร้างกราฟ Student / Book / Category ด้วย `FRIEND_OF`, `BORROWED {borrow_date}`, `IN_CATEGORY`
 - Query 1 hop (เพื่อนของ S001) และ 2 hop (เพื่อนยืมหนังสืออะไร)
@@ -48,7 +49,7 @@ Dirty Read ระหว่าง `READ UNCOMMITTED` กับ `READ COMMITTED`, 
 
 ## 2. GameGraph — ภาพรวมระบบ
 
-GameGraph แนะนำ **เกม** ให้ผู้เล่น โดยจัดอันดับเกมที่ผู้เล่น *ยังไม่เคยเล่น* และแสดงที่มาของคะแนนทุกส่วน
+GameGraph แนะนำ **เกม** ให้ผู้เล่น โดยจัดอันดับเกมที่ผู้เล่น _ยังไม่เคยเล่น_ และแสดงที่มาของคะแนนทุกส่วน
 (Explainable Recommendation) ว่าถูกแนะนำเพราะ
 
 1. เพื่อนของผู้เล่นเคยเล่น
@@ -58,16 +59,16 @@ GameGraph แนะนำ **เกม** ให้ผู้เล่น โดย
 
 ### เมนูในระบบ
 
-| เมนู | ความสามารถ |
-|------|------------|
-| 📊 ภาพรวม | จำนวนผู้เล่น / เกม / ประวัติการเล่น / ความเป็นเพื่อน, กราฟเกมยอดนิยม, แนวเกมที่ผู้เล่นชอบ, โปรไฟล์ผู้เล่น |
-| ✨ เกมแนะนำ | จัดอันดับเกมแนะนำ 3–12 อันดับ พร้อมแถบแยกที่มาของคะแนนและข้อความเหตุผล |
-| 🎮 เกม | ค้นหา (ชื่อเกม/ค่าย/แนว), เพิ่ม, แก้ไข, ลบเกม และอัปโหลดรูปปก |
-| 🧑‍🤝‍🧑 ผู้เล่น | เพิ่ม/แก้ไข/ลบผู้เล่น, แนวเกมที่ชอบ, รูปโปรไฟล์, เพิ่ม/ลบเพื่อน |
-| 📝 บันทึกการเล่น | บันทึกว่าใครเล่นเกมอะไร วันที่ และคะแนนรีวิว (1–5) แก้ไข/ลบประวัติ |
-| 🏷️ ค่ายและแนวเกม | จัดการ Developer และ Genre |
-| 🕸️ กราฟความสัมพันธ์ | วาดเครือข่ายรอบผู้เล่น (เพื่อน, เกม, แนว, ค่าย) ด้วย Graphviz |
-| ⚙️ ตั้งค่าระบบ | สร้าง Constraint + Demo Data และล้างข้อมูลทั้งหมด |
+| เมนู                | ความสามารถ                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| 📊 ภาพรวม           | จำนวนผู้เล่น / เกม / ประวัติการเล่น / ความเป็นเพื่อน, กราฟเกมยอดนิยม, แนวเกมที่ผู้เล่นชอบ, โปรไฟล์ผู้เล่น |
+| ✨ เกมแนะนำ         | จัดอันดับเกมแนะนำ 3–12 อันดับ พร้อมแถบแยกที่มาของคะแนนและข้อความเหตุผล                                    |
+| 🎮 เกม              | ค้นหา (ชื่อเกม/ค่าย/แนว), เพิ่ม, แก้ไข, ลบเกม และอัปโหลดรูปปก                                             |
+| 🧑‍🤝‍🧑 ผู้เล่น          | เพิ่ม/แก้ไข/ลบผู้เล่น, แนวเกมที่ชอบ, รูปโปรไฟล์, เพิ่ม/ลบเพื่อน                                           |
+| 📝 บันทึกการเล่น    | บันทึกว่าใครเล่นเกมอะไร วันที่ และคะแนนรีวิว (1–5) แก้ไข/ลบประวัติ                                        |
+| 🏷️ ค่ายและแนวเกม    | จัดการ Developer และ Genre                                                                                |
+| 🕸️ กราฟความสัมพันธ์ | วาดเครือข่ายรอบผู้เล่น (เพื่อน, เกม, แนว, ค่าย) ด้วย Graphviz                                             |
+| ⚙️ ตั้งค่าระบบ      | สร้าง Constraint + Demo Data และล้างข้อมูลทั้งหมด                                                         |
 
 ---
 
@@ -81,12 +82,12 @@ GameGraph แนะนำ **เกม** ให้ผู้เล่น โดย
 (Developer)-[:DEVELOPED]->(Game)
 ```
 
-| Label | Key (unique) | Property อื่น |
-|-------|--------------|---------------|
-| `User` | `user_id` เช่น `U001` | `name`, `platform`, `level`, `image` |
-| `Game` | `game_id` เช่น `G101` | `title`, `year`, `image` |
-| `Developer` | `developer_id` เช่น `D01` | `name` |
-| `Genre` | `name` | — |
+| Label       | Key (unique)              | Property อื่น                        |
+| ----------- | ------------------------- | ------------------------------------ |
+| `User`      | `user_id` เช่น `U001`     | `name`, `platform`, `level`, `image` |
+| `Game`      | `game_id` เช่น `G101`     | `title`, `year`, `image`             |
+| `Developer` | `developer_id` เช่น `D01` | `name`                               |
+| `Genre`     | `name`                    | —                                    |
 
 - Constraint ทั้ง 4 ตัวถูกสร้างโดย `create_schema()` ตอนกด **สร้าง Constraint + Demo Data**
 - `FRIEND_OF` เก็บเป็นเส้นทางเดียว แต่ทุก query ใช้ `-[:FRIEND_OF]-` (ไม่ระบุทิศทาง) เพื่อให้มีความหมายแบบสมมาตร
@@ -105,12 +106,12 @@ score = friend_count   * 3.0
       + avg_rating     * 0.50
 ```
 
-| องค์ประกอบ | ความหมาย | เส้นทางในกราฟ |
-|-----------|----------|----------------|
-| `friend_count` | จำนวนเพื่อนที่เคยเล่นเกมนั้น | `(u)-[:FRIEND_OF]-(f)-[:PLAYED]->(g)` |
+| องค์ประกอบ      | ความหมาย                                 | เส้นทางในกราฟ                               |
+| --------------- | ---------------------------------------- | ------------------------------------------- |
+| `friend_count`  | จำนวนเพื่อนที่เคยเล่นเกมนั้น             | `(u)-[:FRIEND_OF]-(f)-[:PLAYED]->(g)`       |
 | `genre_matches` | จำนวนแนวที่ผู้เล่นชอบและเกมอยู่ในแนวนั้น | `(u)-[:LIKES_GENRE]->(gn)<-[:IN_GENRE]-(g)` |
-| `popularity` | จำนวนผู้เล่นทั้งหมดของเกม | `(:User)-[:PLAYED]->(g)` |
-| `avg_rating` | คะแนนรีวิวเฉลี่ย (ถ้าไม่มีใช้ 0) | `r.rating` ของ `PLAYED` |
+| `popularity`    | จำนวนผู้เล่นทั้งหมดของเกม                | `(:User)-[:PLAYED]->(g)`                    |
+| `avg_rating`    | คะแนนรีวิวเฉลี่ย (ถ้าไม่มีใช้ 0)         | `r.rating` ของ `PLAYED`                     |
 
 เกมที่ทั้ง 3 ส่วนแรกเป็น 0 จะถูกตัดออก และเรียงตาม `score DESC, title`
 สูตรนี้เป็น **heuristic เพื่อการเรียนการสอน** ไม่ใช่โมเดล ML ที่ผ่านการ optimize น้ำหนักสามารถปรับได้ใน Cypher
@@ -261,6 +262,7 @@ database = "neo4j"
 ## 11. ข้อสังเกตและแนวทางต่อยอด
 
 **ข้อสังเกต**
+
 - Notebook ชิ้นที่ 4 มี URI และ username ของ Aura อยู่ในโค้ด (password ใช้ `getpass`) ก่อนเผยแพร่ควรย้ายไปใช้ secrets หรือ environment variable และ rotate credential หากเคยเปิดเผยแล้ว
 - รูปที่เก็บเป็น data-URI ใน node ทำให้ไฟล์ใหญ่ขึ้นและเพิ่มขนาดฐานข้อมูล เหมาะกับงานเรียน หากใช้จริงควรเก็บไฟล์ภายนอกแล้วเก็บเฉพาะ URL
 - `next_id()` สร้างรหัสถัดไปจากค่ามากที่สุดที่มีอยู่ หากมีหลายคนเพิ่มพร้อมกัน อาจชนกันได้ (Unique Constraint จะป้องกันข้อมูลซ้ำ)
@@ -271,5 +273,9 @@ Login, Wishlist/Favorite, collaborative filtering, Graph Data Science (node simi
 ปรับน้ำหนักคะแนนอัตโนมัติ และประเมินผลด้วย Precision@K / Recall@K
 
 ---
+
+## 12. สไลด์นำเสนอผลงาน
+
+https://canva.link/ckoc56p8h32vqv8
 
 **จัดทำโดย** นายปกานต์ วงษ์ท่าเรือ · 664245056 · 66/44
