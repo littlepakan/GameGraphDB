@@ -167,6 +167,7 @@ def _css() -> None:
           .hero h1 b {{color:var(--amber);}}
           .hero p {{color:var(--muted); margin:.6rem 0 0; max-width:62ch;}}
 
+          .coverbox {{padding-bottom:1rem;}}
           .cover {{border-radius:12px; overflow:hidden; border:1px solid var(--line); line-height:0;}}
           .cover img {{width:100%; aspect-ratio:16/9; object-fit:cover; display:block;}}
           .st-key-card_5 .cover {{border-color: rgba(255,179,71,.35);}}
@@ -199,7 +200,7 @@ def _css() -> None:
 # ════════════════════════════════════════════════════════════════
 def _cover(n: int, alt: str) -> None:
     st.markdown(
-        f'<div class="cover"><img src="{_cover_src(n)}" alt="{esc(alt)}"></div>',
+        f'<div class="coverbox"><div class="cover"><img src="{_cover_src(n)}" alt="{esc(alt)}"></div></div>',
         unsafe_allow_html=True,
     )
 
