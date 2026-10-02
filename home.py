@@ -1,40 +1,25 @@
 """หน้าแรก: เลือกผลงานที่ส่งอาจารย์ (5 ชิ้น) — GameGraph คือชิ้นสุดท้ายที่กดเข้าไปใช้งานระบบจริง"""
 from __future__ import annotations
 
-import base64
 import html
-import io
 from pathlib import Path
 
 import streamlit as st
-from PIL import Image, ImageOps
 
 # ════════════════════════════════════════════════════════════════
 #  ✏️  แก้ลิงก์ตรงนี้ที่เดียว (เว้นว่าง "" = ปุ่มจะถูกปิดไว้จนกว่าจะใส่ลิงก์)
 # ════════════════════════════════════════════════════════════════
 LINKS = {
-    "intro_colab": "",
-    "intro_github": "",
-    "neo4j_github": "",
-    "recsys_colab": "",
-    "recsys_github": "",
-    "recsys_neo4j_colab": "",
-    "recsys_neo4j_github": "",
-    "gamegraph_github": "",
+    "intro_colab": "https://colab.research.google.com/drive/1HSW_zcuTOrRy9oSEF6OeOm5aZk8iRzrp?usp=sharing",
+    "intro_github": "https://github.com/mediuni/GameGraphDB/blob/main/Week2_664245056.ipynb",
+    "neo4j_github": "https://github.com/mediuni/GameGraphDB/blob/main/664245056_Neo4jGraphDB.pdf",
+    "recsys_colab": "https://colab.research.google.com/drive/1F6NlHCEr3OjVgNXJqCD3HBblgVGT4I-l?usp=sharing",
+    "recsys_github": "https://github.com/mediuni/GameGraphDB/blob/main/GameGenresRecommenderSystem.ipynb",
+    "recsys_neo4j_colab": "https://colab.research.google.com/drive/1Lqlh90eylLxEPic16uhgXmAVaxnvyq6O?usp=sharing",
+    "recsys_neo4j_github": "https://github.com/mediuni/GameGraphDB/blob/main/664245056_GameGenresRecommenderWithNeo4j.ipynb",
+    "gamegraph_github": "https://github.com/mediuni/GameGraphDB",
 }
-BASE_DIR = Path(__file__).parent
-PDF_FILE = BASE_DIR / "664245056_Neo4jGraphDB.pdf"
-
-# ชื่อไฟล์รูปปก (ไม่ต้องใส่นามสกุล รองรับ .png .jpg .jpeg .webp) วางไว้โฟลเดอร์เดียวกับ app.py
-# ถ้าไม่พบรูป จะแสดงพื้นหลังไล่สีแทนโดยอัตโนมัติ
-COVERS = {
-    "intro": "cover_intro",
-    "neo4j": "cover_neo4j",
-    "recsys": "cover_recsys",
-    "recsys_neo4j": "cover_recsys_neo4j",
-    "gamegraph": "cover_gamegraph",
-}
-EXTS = (".png", ".jpg", ".jpeg", ".webp")
+PDF_FILE = Path(__file__).parent / "664245056_Neo4jGraphDB.pdf"
 
 OWNER = "นายปกานต์ วงษ์ท่าเรือ"
 STUDENT_ID = "664245056"
@@ -48,25 +33,6 @@ esc = html.escape
 @st.cache_data(show_spinner=False)
 def _pdf_bytes() -> bytes | None:
     return PDF_FILE.read_bytes() if PDF_FILE.exists() else None
-
-
-@st.cache_data(show_spinner=False)
-def _cover_uri(stem: str) -> str | None:
-    """หาไฟล์รูปตามชื่อ ย่อขนาดและบีบอัดเป็น JPEG data-URI (หน้าเว็บโหลดเร็ว ไม่ต้องพึ่งไฟล์ static)"""
-    for ext in EXTS:
-        path = BASE_DIR / f"{stem}{ext}"
-        if path.exists():
-            img = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
-            img.thumbnail((1200, 1200), Image.LANCZOS)
-            buf = io.BytesIO()
-            img.save(buf, "JPEG", quality=85, optimize=True)
-            return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
-    return None
-
-
-def _grad(seed: str) -> str:
-    h = sum(ord(c) for c in seed) * 37 % 360
-    return f"linear-gradient(135deg,hsl({h} 65% 52%),hsl({(h + 55) % 360} 65% 38%))"
 
 
 def _css() -> None:
@@ -84,12 +50,8 @@ def _css() -> None:
             padding:1.2rem 1.3rem 1.1rem; position:relative; overflow:hidden; transition: border-color .2s, transform .2s;
           }}
           [class*="st-key-card_"]::before {{
-            content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent); z-index:2;
+            content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent);
           }}
-          .pcover {{display:block; width:calc(100% + 2.6rem); margin:-1.2rem -1.3rem .95rem; aspect-ratio:16/9;
-                   object-fit:cover; background-size:cover;}}
-          .pcover.ph {{display:grid; place-items:center; font-size:2.6rem;}}
-          .st-key-card_5 .pcover {{aspect-ratio:21/9;}}
           [class*="st-key-card_"]:hover {{border-color:var(--accent); transform: translateY(-2px);}}
           .st-key-card_5 {{
             background: linear-gradient(135deg, rgba(22,26,54,.98), rgba(44,48,112,.98));
@@ -127,15 +89,10 @@ def _css() -> None:
     )
 
 
-def _head(num: str, title: str, desc: str, tags: list[str], cover: str) -> None:
+def _head(num: str, title: str, desc: str, tags: list[str]) -> None:
     chips = "".join(f'<span class="chip">{esc(t)}</span>' for t in tags)
-    uri = _cover_uri(COVERS[cover])
-    if uri:
-        pic = f'<img class="pcover" src="{uri}" alt="{esc(title)}">'
-    else:
-        pic = f'<div class="pcover ph" style="background:{_grad(title)}">🎮</div>'
     st.markdown(
-        f'{pic}<div class="pnum">ผลงานชิ้นที่ {num}</div><div class="ptitle">{esc(title)}</div>'
+        f'<div class="pnum">ผลงานชิ้นที่ {num}</div><div class="ptitle">{esc(title)}</div>'
         f'<div class="pdesc">{esc(desc)}</div><div class="ptags">{chips}</div>',
         unsafe_allow_html=True,
     )
@@ -160,8 +117,6 @@ def render() -> None:
           <h1>Portfolio <b>Graph</b> &amp; Recommender</h1>
           <p>รวมผลงาน 5 ชิ้น ตั้งแต่พื้นฐานฐานข้อมูลขั้นสูง Neo4j ไปจนถึงระบบแนะนำเกมที่ใช้งานได้จริง
           เลือกผลงานที่ต้องการดูได้จากการ์ดด้านล่าง</p>
-          <div class="who"><span class="chip">{esc(OWNER)}</span>
-          <span class="chip">รหัส {esc(STUDENT_ID)}</span><span class="chip">{esc(SECTION)}</span></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -173,7 +128,7 @@ def render() -> None:
     with c1, st.container(key="card_1"):
         _head("1", "Intro of Advanced Database",
               "ปูพื้นฐานฐานข้อมูลขั้นสูง แนวคิดที่ใช้ต่อยอดในผลงานชิ้นถัดไป",
-              ["Colab", "Database"], "intro")
+              ["Colab", "Database"])
         a, b = st.columns(2)
         with a:
             _link("Colab", "intro_colab", "📓")
@@ -183,7 +138,7 @@ def render() -> None:
     with c2, st.container(key="card_2"):
         _head("2", "Neo4jGraphDB",
               "บันทึกการทดลอง Neo4j: constraint, ข้อมูลตัวอย่าง, query 1–2 hop และระบบแนะนำชมรม",
-              ["Neo4j", "Cypher", "PDF"], "neo4j")
+              ["Neo4j", "Cypher", "PDF"])
         a, b = st.columns(2)
         with a:
             data = _pdf_bytes()
@@ -196,8 +151,8 @@ def render() -> None:
 
     with c3, st.container(key="card_3"):
         _head("3", "GameGenresRecommenderSystem",
-              "ระบบแนะนำแนวเกมแบบดั้งเดิม วิเคราะห์ข้อมูลและให้คำแนะนำโดยไม่ใช้กราฟ",
-              ["Colab", "Recommender"], "recsys")
+              "ระบบแนะนำแนวเกมแบบดั้งเดิม วิเคราะห์ข้อมูลและให้คำแนะนำ ก่อนต่อยอดไปสู่ระบบแนะนำเกมด้วยกราฟ Neo4j",
+              ["Colab", "Recommender"])
         a, b = st.columns(2)
         with a:
             _link("Colab", "recsys_colab", "📓")
@@ -212,7 +167,7 @@ def render() -> None:
     with c4, st.container(key="card_4"):
         _head("4", "GameGenresRecommenderWithNeo4j",
               "ต่อยอดระบบแนะนำแนวเกมให้ดึงความสัมพันธ์จากกราฟ Neo4j",
-              ["Colab", "Neo4j", "Recommender"], "recsys_neo4j")
+              ["Colab", "Neo4j", "Recommender"])
         a, b = st.columns(2)
         with a:
             _link("Colab", "recsys_neo4j_colab", "📓")
@@ -223,7 +178,7 @@ def render() -> None:
         _head("5", "🎮 GameGraph",
               "เว็บระบบแนะนำเกมด้วย Neo4j จัดอันดับจากเพื่อนที่เล่น แนวเกมที่ตรงกัน ความนิยม "
               "และคะแนนรีวิว พร้อมจัดการผู้เล่น เกม และกราฟความสัมพันธ์ครบในที่เดียว",
-              ["Streamlit", "Neo4j Aura", "ระบบหลัก"], "gamegraph")
+              ["Streamlit", "Neo4j Aura", "ระบบหลัก"])
         a, b = st.columns([2, 1])
         with a:
             st.button("🚀  เข้าสู่ระบบ GameGraph", type="primary", width="stretch",
