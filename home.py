@@ -153,7 +153,7 @@ def render() -> None:
 
     with c3, st.container(key="card_3"):
         _head("3", "GameGenresRecommenderSystem",
-              "ระบบแนะนำแนวเกมแบบดั้งเดิม วิเคราะห์ข้อมูลและให้คำแนะนำโดยไม่ใช้กราฟ",
+              "ระบบแนะนำแนวเกมแบบดั้งเดิม วิเคราะห์ข้อมูลและให้คำแนะนำ ก่อนต่อยอดไปสู่ระบบแนะนำเกมด้วยกราฟ Neo4j",
               ["Colab", "Recommender"])
         a, b = st.columns(2)
         with a:
